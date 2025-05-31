@@ -16,12 +16,13 @@ The SK Frequency Router is a component that intelligently routes tasks to the ap
 | **Nuance** | Binary keyword matching | Understands degrees and nuances |
 | **Fallback mechanism** | Default to Analysis frequency | Provides next best alternative |
 | **Economic evaluation** | Separate component | Integrated in the router |
-| **Maintenance** | Requires manual keyword updates | Self-adapting through LLM |
 | **Performance tracking** | Manual logging | Automated monitoring |
+| **Prompt quality** | N/A | Enhanced, detailed prompts |
+| **Benchmarking** | Not available | Comprehensive comparison |
 
 ## Implementation Details
 
-The implementation consists of three main components:
+The implementation consists of four main components:
 
 ### 1. SK Frequency Router
 
@@ -36,7 +37,25 @@ The core router component with two primary methods:
    - Evaluates the economic value of processing a goal at a specific frequency
    - Returns a score from 0-100 representing the value
 
-### 2. SK Frequency Router Monitor
+### 2. SK Frequency Router Prompts
+
+A specialized component providing optimized prompts for the router:
+
+- **FrequencyDeterminationPrompt**
+   - Detailed guidance for frequency selection
+   - Includes examples, considerations, and clear instructions
+   - Enhances accuracy and consistency of routing decisions
+
+- **EconomicValuePrompt**
+   - Detailed guidance for economic value calculation
+   - Includes value ranges for different scenarios
+   - Ensures more accurate and consistent economic assessments
+
+- **SampleGoals**
+   - Provides a set of sample goals for each frequency
+   - Used for testing, training, and benchmarking
+
+### 3. SK Frequency Router Monitor
 
 A monitoring component that tracks router performance:
 
@@ -52,7 +71,7 @@ A monitoring component that tracks router performance:
    - Persists routing decisions to enable long-term analysis
    - Supports continuous improvement of the router
 
-### 3. Integration with Orchestrator
+### 4. Integration with Orchestrator
 
 The CognitiveFrequencyOrchestrator has been updated to:
 
@@ -61,6 +80,24 @@ The CognitiveFrequencyOrchestrator has been updated to:
 3. Determine both frequency and economic value using the router
 4. Record routing decisions and outcomes in the monitor
 5. Generate performance reports to evaluate router effectiveness
+
+## Enhanced Prompts
+
+The router uses carefully crafted prompts to guide the Semantic Kernel:
+
+### Frequency Determination Prompt
+
+- Provides detailed descriptions of each frequency
+- Includes examples of appropriate goals for each frequency
+- Lists specific considerations for determining the appropriate frequency
+- Ensures clear, consistent output format
+
+### Economic Value Prompt
+
+- Explains what economic value represents
+- Provides clear guidelines for value ranges by frequency
+- Lists factors to consider in economic evaluation
+- Ensures output is a consistent numeric score
 
 ## Performance Monitoring
 
@@ -73,6 +110,21 @@ The SK Frequency Router Monitor tracks the following metrics:
 
 These metrics enable continuous evaluation and improvement of the router, ensuring it routes tasks to the most appropriate frequency over time.
 
+## Benchmarking
+
+The system includes a benchmarking tool to compare the SK-based router with the keyword-based approach:
+
+```bash
+./benchmark-frequency-router.sh [test_cases]
+```
+
+The benchmark:
+- Runs both routers on the same set of test cases
+- Measures processing time, frequency distribution, and economic values
+- Calculates agreement rate between the routers
+- Provides sample disagreements for analysis
+- Saves detailed results for further study
+
 ## Benefits
 
 - **More accurate routing**: Tasks are routed to the most appropriate frequency based on their actual meaning rather than keywords
@@ -81,6 +133,7 @@ These metrics enable continuous evaluation and improvement of the router, ensuri
 - **Greater adaptability**: Can understand new types of goals without updates
 - **Improved nuance**: Understands degrees of urgency, complexity, etc.
 - **Performance insights**: Tracks routing decisions to enable data-driven improvements
+- **Benchmarking capabilities**: Provides comparative analysis against the previous approach
 
 ## Testing and Validation
 
@@ -89,11 +142,18 @@ The system includes a comprehensive test suite:
 1. **Basic test**: Tests the router with a set of predefined goals
 2. **Comprehensive test**: Tests with a wider range of scenarios across all frequencies
 3. **Performance report**: Generates a detailed report of router performance
+4. **Benchmark comparison**: Compares against the keyword-based approach
 
 Run the tests using:
 
 ```bash
 ./run-sk-frequency-router-test.sh
+```
+
+Run the benchmark using:
+
+```bash
+./benchmark-frequency-router.sh [number_of_test_cases]
 ```
 
 ## Future Improvements
@@ -104,4 +164,5 @@ Run the tests using:
 4. **Confidence scores**: Provide confidence levels for routing decisions
 5. **Dynamic thresholds**: Adjust frequency thresholds based on system load
 6. **Anomaly detection**: Identify unusual routing patterns or poor performance
-7. **Visualization dashboard**: Create a real-time dashboard of router performance 
+7. **Visualization dashboard**: Create a real-time dashboard of router performance
+8. **Pre-trained models**: Fine-tune models specifically for frequency routing 
