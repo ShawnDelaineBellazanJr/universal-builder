@@ -34,17 +34,8 @@ namespace AutonomousAI.Cognition
             // Use SK to analyze the goal and recommend a frequency
             var chatHistory = new ChatHistory();
             
-            chatHistory.AddSystemMessage(@"You are an AI cognitive frequency router. Your task is to analyze a goal and determine 
-which cognitive frequency is most appropriate for processing it. The available frequencies are:
-
-- Immediate (0s): For emergencies and critical tasks requiring instant response
-- Continuous (30s): For background monitoring and lightweight processing
-- Analysis (15m): For tasks requiring deeper thinking and analysis
-- Optimization (2h): For improvement tasks and optimizations
-- Evolution (24h): For architectural changes and major improvements
-
-Consider factors like urgency, complexity, potential impact, and resource requirements when making your decision.
-Respond with ONLY the name of the most appropriate frequency, nothing else.");
+            // Use the enhanced prompt for better accuracy
+            chatHistory.AddSystemMessage(SkFrequencyRouterPrompts.FrequencyDeterminationPrompt);
             
             chatHistory.AddUserMessage($"Goal: {goal}\nContext: {context}");
             
@@ -71,15 +62,8 @@ Respond with ONLY the name of the most appropriate frequency, nothing else.");
         {
             var chatHistory = new ChatHistory();
             
-            chatHistory.AddSystemMessage(@"You are an AI economic evaluator for cognitive processing. Your task is to 
-determine the economic value (as a score from 0-100) of processing a goal at a specific cognitive frequency.
-Consider factors like:
-- Urgency of the goal
-- Complexity of the task
-- Resource requirements
-- Potential impact
-- Cost/benefit ratio
-Respond with ONLY a numeric score from 0-100, nothing else.");
+            // Use the enhanced prompt for better economic evaluation
+            chatHistory.AddSystemMessage(SkFrequencyRouterPrompts.EconomicValuePrompt);
             
             chatHistory.AddUserMessage($"Goal: {goal}\nFrequency: {frequency}");
             
@@ -92,6 +76,22 @@ Respond with ONLY a numeric score from 0-100, nothing else.");
             
             // Default value if parsing fails
             return 50;
+        }
+        
+        /// <summary>
+        /// Gets a sample goal for the specified frequency
+        /// Useful for testing and demonstrations
+        /// </summary>
+        public string GetSampleGoal(string frequency)
+        {
+            var sampleGoals = SkFrequencyRouterPrompts.GetSampleGoals();
+            if (sampleGoals.TryGetValue(frequency.ToLower(), out var goals) && goals.Count > 0)
+            {
+                var random = new Random();
+                return goals[random.Next(goals.Count)];
+            }
+            
+            return "Analyze system performance";  // Default sample goal
         }
     }
 
