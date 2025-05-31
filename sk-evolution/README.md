@@ -1,90 +1,72 @@
 # SK Evolution Engine
 
-An autonomous system for evolving the multi-frequency cognitive architecture using Semantic Kernel.
+The SK Evolution Engine is an autonomous system for evolving Semantic Kernel implementations in the multi-frequency cognitive architecture.
 
 ## Overview
 
-The SK Evolution Engine is designed to analyze the .NET SDK and Semantic Kernel repositories, learn from their patterns and best practices, and autonomously propose and implement improvements to our multi-frequency cognitive architecture.
-
-This system leverages the power of large language models through Microsoft's Semantic Kernel to continuously evolve our codebase with minimal human intervention.
+This engine analyzes the codebase, proposes improvements, and implements them automatically. It runs at the "Evolution" frequency (24h) and focuses on architectural changes and major improvements.
 
 ## Features
 
-- **Repository Analysis**: Analyzes the .NET SDK and Semantic Kernel repositories to learn best practices
-- **Improvement Proposals**: Autonomously proposes improvements to the codebase
-- **Implementation**: Implements the proposed improvements and creates pull requests
-- **Economic Consciousness**: Evaluates the value of improvements before implementing them
-- **Multiple Frequencies**: Supports the multi-frequency cognitive architecture (Immediate, Continuous, Analysis, Optimization, Evolution)
+- **Autonomous Analysis**: Analyzes .NET SDK and Semantic Kernel repositories to identify best practices
+- **Improvement Proposals**: Generates improvement ideas with economic value assessments
+- **Automated Implementation**: Can implement improvements automatically via pull requests
+- **GitHub Integration**: Works with GitHub Actions for scheduled evolution cycles
 
 ## Usage
 
-### Prerequisites
-
-- .NET 7.0 or later
-- OpenAI API key (for GPT-4)
-- GitHub token (for repository access)
-
-### Setup
-
-1. Create a `.env` file in the `SkEvolutionEngine` directory with your API keys:
-
-```
-# OpenAI Configuration
-OPENAI_API_KEY=your_openai_api_key_here
-OPENAI_ORG_ID=your_org_id_here (optional)
-
-# GitHub Configuration
-GITHUB_TOKEN=your_github_token_here
-
-# Logging
-LOG_LEVEL=Information
-```
-
-### Running the Engine
-
-Use the `run-sk-evolution.sh` script to run the SK Evolution Engine:
+You can run the SK Evolution Engine in different modes:
 
 ```bash
-# Run the full evolution cycle
+# Run a full evolution cycle
 ./run-sk-evolution.sh
 
-# Run a specific command
+# Analyze .NET SDK repository
 ./run-sk-evolution.sh analyze-dotnet
+
+# Analyze Semantic Kernel repository
 ./run-sk-evolution.sh analyze-sk
+
+# Propose improvements based on analysis
 ./run-sk-evolution.sh propose-improvements
+
+# Implement proposed improvements
 ./run-sk-evolution.sh implement-improvements
 ```
 
-## Architecture
+## Recent Improvements
 
-The SK Evolution Engine follows these steps in its evolution cycle:
+The SK Evolution Engine has proposed and implemented several improvements:
 
-1. **Analyze**: Study the .NET SDK and Semantic Kernel repositories to understand best practices
-2. **Learn**: Extract patterns and principles from the analysis
-3. **Propose**: Generate specific improvement proposals with justifications
-4. **Implement**: Create code changes for the approved proposals
-5. **Validate**: Ensure the changes work as expected and add value
-6. **Integrate**: Create pull requests to integrate the changes
+1. **Semantic Kernel-based Frequency Router** (Economic Value: 92/100)
+   - Created a cognitive frequency router that uses SK to determine which cognitive frequency is best for a given task based on economic value
+   - Implemented in `src/Cognition/SkFrequencyRouter.cs`
+
+2. **Adaptive Learning for Frequency Thresholds** (Economic Value: 87/100)
+   - Proposed improvement to implement an adaptive learning system that automatically adjusts frequency thresholds based on past performance
+
+3. **SK Memory for Goal History** (Economic Value: 90/100)
+   - Proposed improvement to use SK Memory to store and retrieve past goals and their outcomes to inform future decisions
 
 ## Configuration
 
-The system behavior can be customized through the `config.json` file:
+The engine is configured through `config.json` which includes:
 
-- **semanticKernel**: Model settings (temperature, max tokens, etc.)
-- **repositories**: GitHub repositories to analyze and target
-- **evolution**: Settings for the evolution cycle (interval, threshold, etc.)
-- **frequencies**: Configuration for each cognitive frequency
+- Semantic Kernel model configuration
+- Repository settings
+- Evolution parameters
+- Frequency configurations
 
 ## GitHub Workflow
 
-The SK Evolution Engine can be run automatically through GitHub Actions using the workflow in `.github/workflows/sk-evolution.yml`. This workflow runs daily and can also be triggered manually.
+The engine is integrated with GitHub Actions and runs on a daily schedule. It can also be triggered manually:
 
-## Integration with Multi-Frequency Cognitive Architecture
+```bash
+gh workflow run sk-evolution.yml
+```
 
-The SK Evolution Engine is designed to work with our multi-frequency cognitive architecture:
+Or with specific parameters:
 
-- **Immediate (0s)**: Quick responses to urgent inputs
-- **Continuous (30s)**: Ongoing processing of information
-- **Analysis (15m)**: Deeper analysis of complex problems
-- **Optimization (2h)**: Performance and design improvements
-- **Evolution (24h)**: Long-term architectural evolution 
+```bash
+gh workflow run sk-evolution.yml --field command=propose-improvements
+``` 
