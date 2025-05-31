@@ -13,7 +13,7 @@ on:
         required: false
         default: '50'
   schedule:
-    - cron: '* * * * *'  # Run every minute, 24/7
+    - cron: '*/5 * * * *'  # Run every 5 minutes (reduced frequency to avoid API rate limits)
 
 jobs:
   universal-builder:
@@ -28,11 +28,11 @@ jobs:
       with:
         dotnet-version: '8.0.x'
         
-    - name: Install dependencies
-      run: |
-        dotnet add package Microsoft.SemanticKernel --version 1.54.0 --prerelease
-        dotnet add package Microsoft.SemanticKernel.Connectors.OpenAI --version 1.54.0 --prerelease
-        dotnet add package Octokit --version 7.1.0
+    - name: Restore dependencies
+      run: dotnet restore
+        
+    - name: Build project
+      run: dotnet build --configuration Release --no-restore
         
     - name: Set environment variables
       env:
@@ -74,7 +74,9 @@ jobs:
         
     - name: Run Universal Builder
       run: |
-        dotnet run --project . -- "$INTENT" "$VALUE_THRESHOLD"
+        echo "Running with intent: $INTENT"
+        echo "Value threshold: $VALUE_THRESHOLD"
+        dotnet run --project . --configuration Release -- "$INTENT" "$VALUE_THRESHOLD"
         
     - name: Create PR for self-evolution (if changes detected)
       if: success()
