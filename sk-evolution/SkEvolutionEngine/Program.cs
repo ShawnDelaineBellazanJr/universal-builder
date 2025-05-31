@@ -1,2 +1,1 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+// Placeholder for SK Evolution Engine - will be populated by GitHub workflow
