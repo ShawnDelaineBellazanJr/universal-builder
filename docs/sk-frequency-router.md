@@ -17,29 +17,61 @@ The SK Frequency Router is a component that intelligently routes tasks to the ap
 | **Fallback mechanism** | Default to Analysis frequency | Provides next best alternative |
 | **Economic evaluation** | Separate component | Integrated in the router |
 | **Maintenance** | Requires manual keyword updates | Self-adapting through LLM |
+| **Performance tracking** | Manual logging | Automated monitoring |
 
 ## Implementation Details
 
-The SK Frequency Router consists of two primary methods:
+The implementation consists of three main components:
 
-1. **DetermineFrequencyAsync**
+### 1. SK Frequency Router
+
+The core router component with two primary methods:
+
+- **DetermineFrequencyAsync**
    - Takes a goal and optional context
    - Uses SK to analyze the goal semantically
    - Returns the most appropriate frequency and its configuration
 
-2. **CalculateEconomicValueAsync**
+- **CalculateEconomicValueAsync**
    - Evaluates the economic value of processing a goal at a specific frequency
    - Returns a score from 0-100 representing the value
 
-## Integration with Orchestrator
+### 2. SK Frequency Router Monitor
+
+A monitoring component that tracks router performance:
+
+- **RecordDecision**
+   - Records routing decisions and their outcomes
+   - Captures goal, context, frequency, economic value, success, and execution time
+
+- **GenerateReport**
+   - Analyzes routing decisions to evaluate performance
+   - Provides insights on frequency distribution, success rates, and execution times
+
+- **SaveLog/LoadLog**
+   - Persists routing decisions to enable long-term analysis
+   - Supports continuous improvement of the router
+
+### 3. Integration with Orchestrator
 
 The CognitiveFrequencyOrchestrator has been updated to:
 
-1. Initialize an instance of SkFrequencyRouter on creation
+1. Initialize instances of both SkFrequencyRouter and SkFrequencyRouterMonitor
 2. Use the router when processing goals (when enabled)
 3. Determine both frequency and economic value using the router
-4. Map the string frequency name to the CognitiveFrequency enum
-5. Fall back to keyword-based routing if necessary
+4. Record routing decisions and outcomes in the monitor
+5. Generate performance reports to evaluate router effectiveness
+
+## Performance Monitoring
+
+The SK Frequency Router Monitor tracks the following metrics:
+
+- **Frequency distribution**: Which frequencies are selected most often
+- **Success rates**: How often each frequency leads to successful outcomes
+- **Economic values**: Average economic value by frequency
+- **Execution times**: How long each frequency takes to process
+
+These metrics enable continuous evaluation and improvement of the router, ensuring it routes tasks to the most appropriate frequency over time.
 
 ## Benefits
 
@@ -48,6 +80,21 @@ The CognitiveFrequencyOrchestrator has been updated to:
 - **Reduced maintenance**: No need to maintain keyword lists
 - **Greater adaptability**: Can understand new types of goals without updates
 - **Improved nuance**: Understands degrees of urgency, complexity, etc.
+- **Performance insights**: Tracks routing decisions to enable data-driven improvements
+
+## Testing and Validation
+
+The system includes a comprehensive test suite:
+
+1. **Basic test**: Tests the router with a set of predefined goals
+2. **Comprehensive test**: Tests with a wider range of scenarios across all frequencies
+3. **Performance report**: Generates a detailed report of router performance
+
+Run the tests using:
+
+```bash
+./run-sk-frequency-router-test.sh
+```
 
 ## Future Improvements
 
@@ -55,4 +102,6 @@ The CognitiveFrequencyOrchestrator has been updated to:
 2. **Personalization**: Consider user preferences and history
 3. **Multi-context awareness**: Include project, team, and organizational context
 4. **Confidence scores**: Provide confidence levels for routing decisions
-5. **Dynamic thresholds**: Adjust frequency thresholds based on system load 
+5. **Dynamic thresholds**: Adjust frequency thresholds based on system load
+6. **Anomaly detection**: Identify unusual routing patterns or poor performance
+7. **Visualization dashboard**: Create a real-time dashboard of router performance 
