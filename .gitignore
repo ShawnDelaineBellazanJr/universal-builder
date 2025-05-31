@@ -32,10 +32,25 @@ artifacts/
 # Environment variables
 .env
 *.env
+.env.*
+!.env-example
 
 # Local History
 .localhistory/
 
 # Rider
 .idea/
-*.sln.iml 
+*.sln.iml
+
+# Docker
+.docker/
+
+# Logs
+*.log
+
+# Temporary files
+/temp/
+*.tmp
+
+# Documentation and sample code
+/docs/**/*.cs 
