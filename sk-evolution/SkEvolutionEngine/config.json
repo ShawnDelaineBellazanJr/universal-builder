@@ -1,0 +1,60 @@
+{
+  "semanticKernel": {
+    "model": "gpt-4",
+    "temperature": 0.7,
+    "maxTokens": 4000,
+    "topP": 0.95
+  },
+  "repositories": {
+    "dotnetSdk": {
+      "owner": "dotnet",
+      "name": "sdk",
+      "branch": "main"
+    },
+    "semanticKernel": {
+      "owner": "microsoft",
+      "name": "semantic-kernel",
+      "branch": "main"
+    },
+    "selfRepo": {
+      "owner": "ShawnDelaineBellazanJr",
+      "name": "universal-builder",
+      "branch": "main"
+    }
+  },
+  "evolution": {
+    "cycleInterval": "24h",
+    "economicThreshold": 90,
+    "maxImprovementsPerCycle": 3,
+    "stages": [
+      "analyze",
+      "learn",
+      "propose",
+      "implement",
+      "validate",
+      "integrate"
+    ]
+  },
+  "frequencies": {
+    "immediate": {
+      "interval": "0s",
+      "threshold": 95
+    },
+    "continuous": {
+      "interval": "30s",
+      "threshold": 50
+    },
+    "analysis": {
+      "interval": "15m",
+      "threshold": 70
+    },
+    "optimization": {
+      "interval": "2h",
+      "threshold": 85
+    },
+    "evolution": {
+      "interval": "24h",
+      "threshold": 90
+    }
+  }
+} 
