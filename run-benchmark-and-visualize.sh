@@ -55,6 +55,7 @@ fi
 # Make scripts executable
 chmod +x benchmark-frequency-router.sh
 chmod +x visualize-benchmark-results.py
+chmod +x generate-dashboard.py
 
 # Number of test cases to run
 TEST_CASES=${1:-20}
@@ -74,5 +75,30 @@ fi
 echo -e "${BLUE}Generating visualizations from benchmark results...${NC}"
 python3 visualize-benchmark-results.py "$RESULTS_FILE"
 
+# Generate HTML dashboard
+echo -e "${BLUE}Generating HTML dashboard...${NC}"
+DASHBOARD_FILE="sk_router_dashboard_$(date +%Y%m%d_%H%M%S).html"
+python3 generate-dashboard.py "$RESULTS_FILE" "$DASHBOARD_FILE"
+
+# Check if the dashboard was generated
+if [ -f "$DASHBOARD_FILE" ]; then
+    echo -e "${GREEN}Dashboard generated: ${DASHBOARD_FILE}${NC}"
+    
+    # Try to open the dashboard in the default browser if not in a headless environment
+    if [ -n "$DISPLAY" ] || [ "$(uname)" == "Darwin" ]; then
+        echo -e "${BLUE}Attempting to open dashboard in browser...${NC}"
+        if [ "$(uname)" == "Darwin" ]; then
+            open "$DASHBOARD_FILE"
+        elif command -v xdg-open &> /dev/null; then
+            xdg-open "$DASHBOARD_FILE"
+        elif command -v gnome-open &> /dev/null; then
+            gnome-open "$DASHBOARD_FILE"
+        else
+            echo -e "${YELLOW}Could not automatically open the dashboard. Please open it manually.${NC}"
+        fi
+    fi
+fi
+
 echo -e "${GREEN}Benchmark and visualization complete!${NC}"
-echo -e "Review the results in the benchmark_visualizations_* directory." 
+echo -e "Review the visualizations in the benchmark_visualizations_* directory."
+echo -e "Review the interactive dashboard in ${DASHBOARD_FILE}" 
