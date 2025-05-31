@@ -59,12 +59,10 @@ namespace AutonomousAI
             // Initialize GitHub memory
             _githubMemory = new GitHubMemory(_githubToken, _repoOwner, _repoName);
 
-            // Initialize Semantic Kernel
-            _kernel = new Kernel();
-            _kernel.AddOpenAIChatCompletionService(
-                "default",
-                MODEL_ID,
-                _openAIKey);
+            // Initialize Semantic Kernel with proper API for 1.54.0
+            var builder = Kernel.CreateBuilder();
+            builder.AddOpenAIChatCompletion(MODEL_ID, _openAIKey);
+            _kernel = builder.Build();
         }
 
         /// <summary>
@@ -538,18 +536,37 @@ assistant: <answer>\n";
         /// <returns>Execution result</returns>
         private async Task<string> ExecutePromptTemplateAsync(string template, Dictionary<string, string> variables)
         {
-            // Create a prompt from the template
-            var promptConfig = new PromptTemplateConfig
+            try
             {
-                Template = template,
-                TemplateFormat = "handlebars"
-            };
+                // Create a handlebars prompt template
+                var handlebarsPrompt = new HandlebarsPromptTemplate(template);
+                
+                // Create prompt template config
+                var promptConfig = new PromptTemplateConfig
+                {
+                    Template = template
+                };
+                
+                // Prepare kernel arguments from variables
+                var kernelArguments = new KernelArguments();
+                foreach (var kvp in variables)
+                {
+                    kernelArguments[kvp.Key] = kvp.Value;
+                }
 
-            var prompt = new KernelPromptTemplate(promptConfig);
-
-            // Execute the prompt with the kernel
-            var result = await prompt.InvokeAsync(_kernel, variables);
-            return result.ToString().Trim();
+                // Render the prompt with variables
+                var renderedPrompt = await handlebarsPrompt.RenderAsync(_kernel, kernelArguments);
+                
+                // Execute the prompt with the kernel
+                var result = await _kernel.InvokePromptAsync(renderedPrompt, kernelArguments);
+                
+                return result.GetValue<string>() ?? string.Empty;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error executing template: {ex.Message}");
+                throw;
+            }
         }
 
         #endregion
