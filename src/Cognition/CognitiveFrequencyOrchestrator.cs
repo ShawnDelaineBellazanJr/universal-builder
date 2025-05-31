@@ -20,13 +20,15 @@ namespace UniversalAutonomousBuilder.Cognition
         private readonly bool _debugMode;
         private readonly bool _useSKRouter;
         private readonly SkFrequencyRouter _skRouter;
+        private readonly SkFrequencyRouterMonitor _routerMonitor;
         
         public CognitiveFrequencyOrchestrator(
             Kernel kernel, 
             EconomicConsciousness economics,
             AdaptiveScheduler scheduler,
             bool debugMode = false,
-            bool useSKRouter = true) // Default to using SK-based router
+            bool useSKRouter = true, // Default to using SK-based router
+            string routerLogPath = "sk-frequency-router-log.json")
         {
             _kernel = kernel ?? throw new ArgumentNullException(nameof(kernel));
             _chatService = kernel.GetRequiredService<IChatCompletionService>();
@@ -34,6 +36,9 @@ namespace UniversalAutonomousBuilder.Cognition
             _scheduler = scheduler ?? throw new ArgumentNullException(nameof(scheduler));
             _debugMode = debugMode;
             _useSKRouter = useSKRouter;
+            
+            // Initialize the router monitor
+            _routerMonitor = new SkFrequencyRouterMonitor(routerLogPath);
             
             // Initialize the SK Frequency Router
             if (_useSKRouter)
@@ -54,7 +59,7 @@ namespace UniversalAutonomousBuilder.Cognition
         /// <summary>
         /// Process a goal through the multi-frequency cognitive architecture
         /// </summary>
-        public async Task<CognitiveResponse> ProcessGoalAsync(string goal)
+        public async Task<CognitiveResponse> ProcessGoalAsync(string goal, string context = "")
         {
             Console.WriteLine($"Processing goal through multi-frequency cognition: {goal}");
             
@@ -63,11 +68,13 @@ namespace UniversalAutonomousBuilder.Cognition
                 // Step 1: Determine the appropriate cognitive frequency
                 CognitiveFrequency frequency;
                 int economicValue = 0;
+                string frequencyName = "";
                 
                 if (_useSKRouter)
                 {
                     // Use the SK Frequency Router
-                    var (frequencyName, config) = await _skRouter.DetermineFrequencyAsync(goal);
+                    var (name, config) = await _skRouter.DetermineFrequencyAsync(goal, context);
+                    frequencyName = name;
                     frequency = MapToFrequency(frequencyName);
                     
                     // Calculate economic value using the SK router
@@ -79,6 +86,7 @@ namespace UniversalAutonomousBuilder.Cognition
                 {
                     // Use the traditional keyword-based method
                     frequency = await DetermineCognitiveFrequencyAsync(goal);
+                    frequencyName = frequency.ToString().ToLower();
                     
                     // Calculate economic value using the traditional method
                     economicValue = await _economics.EvaluateGoalValueAsync(goal);
@@ -97,6 +105,7 @@ namespace UniversalAutonomousBuilder.Cognition
                     if (justification.AlternativeFrequency.HasValue)
                     {
                         frequency = justification.AlternativeFrequency.Value;
+                        frequencyName = frequency.ToString().ToLower();
                         Console.WriteLine($"Using alternative frequency: {frequency}");
                         
                         // Re-evaluate justification with new frequency
@@ -104,24 +113,34 @@ namespace UniversalAutonomousBuilder.Cognition
                         
                         if (!justification.Justified)
                         {
-                            return new CognitiveResponse
+                            var response = new CognitiveResponse
                             {
                                 Success = false,
                                 Message = $"Goal processing not justified at any frequency. {justification.Reason}",
                                 Frequency = frequency,
                                 EconomicValue = economicValue
                             };
+                            
+                            // Record the decision in the monitor (unsuccessful)
+                            _routerMonitor.RecordDecision(goal, context, frequencyName, economicValue, false, TimeSpan.Zero);
+                            
+                            return response;
                         }
                     }
                     else
                     {
-                        return new CognitiveResponse
+                        var response = new CognitiveResponse
                         {
                             Success = false,
                             Message = justification.Reason,
                             Frequency = frequency,
                             EconomicValue = economicValue
                         };
+                        
+                        // Record the decision in the monitor (unsuccessful)
+                        _routerMonitor.RecordDecision(goal, context, frequencyName, economicValue, false, TimeSpan.Zero);
+                        
+                        return response;
                     }
                 }
                 
@@ -130,6 +149,9 @@ namespace UniversalAutonomousBuilder.Cognition
                 
                 // Step 5: Update adaptive learning based on outcome
                 await _scheduler.LearnFromOutcomeAsync(frequency, result.Success, result.ExecutionTime);
+                
+                // Record the decision in the monitor
+                _routerMonitor.RecordDecision(goal, context, frequencyName, economicValue, result.Success, result.ExecutionTime);
                 
                 return result;
             }
@@ -151,6 +173,14 @@ namespace UniversalAutonomousBuilder.Cognition
                 
                 throw;
             }
+        }
+        
+        /// <summary>
+        /// Generate a performance report for the frequency router
+        /// </summary>
+        public RoutingPerformanceReport GenerateRouterPerformanceReport()
+        {
+            return _routerMonitor.GenerateReport();
         }
         
         /// <summary>
