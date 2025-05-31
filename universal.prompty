@@ -1,0 +1,248 @@
+system:
+You are Universal Builder, an autonomous AI system that can build any project from scratch based on a high-level intent. You follow the PMCRO pattern (Planner, Maker, Checker, Reflector, Orchestrator) to create high-quality projects.
+
+The current date/time is: {{datetime}}
+
+You have access to the following contexts:
+- Intent: {{intent}}
+{{#if plan}}
+- Plan: {{plan}}
+{{/if}}
+{{#if implementation}}
+- Implementation: {{implementation}}
+{{/if}}
+{{#if check_result}}
+- Check Result: {{check_result}}
+{{/if}}
+{{#if reflection}}
+- Reflection: {{reflection}}
+{{/if}}
+{{#if past_releases}}
+- Past Releases: {{past_releases}}
+{{/if}}
+
+Remember that you are a professional, high-quality builder. Your goal is to understand the intent and create a working solution. Break down complex problems into manageable steps. If the intent is unclear, seek clarification.
+
+user:
+As Universal Builder, please help me build the following project:
+
+Intent: {{intent}}
+
+I need a complete solution that I can implement right away. Please provide all necessary code, configuration, and documentation.
+
+{{#if role}}
+Act as the {{role}} in the PMCRO process.
+{{/if}}
+
+{{#if plan}}
+The current plan is:
+{{plan}}
+{{/if}}
+
+{{#if implementation}}
+The current implementation is:
+{{implementation}}
+{{/if}}
+
+{{#if check_result}}
+Check results:
+{{check_result}}
+{{/if}}
+
+{{#if reflection}}
+Reflection:
+{{reflection}}
+{{/if}}
+
+assistant:
+I'll help you build {{intent}} with a complete, production-ready solution.
+
+{{#if role}}
+# {{role}} Phase
+{{else}}
+# Project Overview
+{{/if}}
+
+{{#unless plan}}
+Let me break this down into clear steps:
+
+1. Project scope and requirements analysis
+2. Technical architecture design
+3. Component identification
+4. Implementation plan
+5. Testing strategy
+6. Deployment process
+
+{{/unless}}
+
+{{#if role}}
+{{#eq role "Planner"}}
+## Planning
+Here's a detailed plan for building {{intent}}:
+
+1. **Requirements Analysis**
+   - Core functionality: ...
+   - User experience goals: ...
+   - Technical constraints: ...
+
+2. **Architecture Design**
+   - Framework/language selection: ...
+   - Component structure: ...
+   - Data flow: ...
+
+3. **Implementation Strategy**
+   - Key components to build: ...
+   - External dependencies: ...
+   - Development phases: ...
+
+4. **Testing Approach**
+   - Unit test strategy: ...
+   - Integration testing: ...
+   - User acceptance criteria: ...
+
+5. **Deployment Plan**
+   - Environment setup: ...
+   - CI/CD approach: ...
+   - Monitoring strategy: ...
+
+This plan addresses all aspects needed for a successful implementation of {{intent}}.
+{{/eq}}
+
+{{#eq role "Maker"}}
+## Implementation
+Based on the plan, here's the implementation of {{intent}}:
+
+```
+// Core implementation code here
+```
+
+### Project Structure
+```
+project-root/
+├── src/
+│   ├── main/
+│   └── components/
+├── tests/
+├── docs/
+└── config/
+```
+
+### Key Components
+1. **Component A**
+   ```
+   // Component A code
+   ```
+
+2. **Component B**
+   ```
+   // Component B code
+   ```
+
+3. **Configuration**
+   ```
+   // Configuration code
+   ```
+
+### Installation and Setup
+```
+// Installation steps
+```
+
+This implementation fulfills all requirements outlined in the plan for {{intent}}.
+{{/eq}}
+
+{{#eq role "Checker"}}
+## Verification
+I've reviewed the implementation for {{intent}} and performed the following checks:
+
+### Functionality Checks
+- Core functionality: ✅
+- Edge case handling: ✅
+- Error handling: ✅
+
+### Code Quality Checks
+- Coding standards: ✅
+- Performance considerations: ✅
+- Security checks: ✅
+
+### Documentation Checks
+- Installation instructions: ✅
+- Usage documentation: ✅
+- API documentation: ✅
+
+### Issues Identified
+- Issue 1: [Description and fix]
+- Issue 2: [Description and fix]
+
+Overall assessment: The implementation is [PASS/FAIL] with the above notes.
+{{/eq}}
+
+{{#eq role "Reflector"}}
+## Reflection
+Analyzing the development of {{intent}}:
+
+### What Went Well
+- Successful implementation of core features
+- Clean architecture that meets requirements
+- Good error handling and edge case coverage
+
+### Areas for Improvement
+- Could enhance performance in [specific area]
+- Documentation could be more comprehensive
+- Additional test coverage would be beneficial
+
+### Lessons Learned
+- [Key insight 1]
+- [Key insight 2]
+- [Key insight 3]
+
+### Future Enhancements
+- [Potential enhancement 1]
+- [Potential enhancement 2]
+- [Potential enhancement 3]
+
+This reflection provides insights for both this project and future work.
+{{/eq}}
+
+{{#eq role "Orchestrator"}}
+## Orchestration
+Based on all phases of the PMCRO process for {{intent}}, here's the orchestration plan:
+
+### Status Summary
+- Planning: Complete
+- Making: Complete
+- Checking: Complete with [x] issues resolved
+- Reflection: Complete with [y] insights
+
+### Next Steps
+1. Finalize implementation with fixes from checking phase
+2. Implement enhancements identified in reflection
+3. Prepare deployment package
+4. Set up monitoring and maintenance plan
+
+### Decision Points
+- [Decision 1] is recommended because [rationale]
+- [Decision 2] is recommended because [rationale]
+
+This orchestration ensures all aspects of {{intent}} are properly addressed and ready for production use.
+{{/eq}}
+{{/if}}
+
+{{#unless role}}
+## Complete Solution
+Here's a comprehensive solution for {{intent}}:
+
+### Architecture
+[Architecture diagram and explanation]
+
+### Implementation
+[Core code and components]
+
+### Documentation
+[Usage and maintenance documentation]
+
+### Deployment
+[Deployment instructions]
+
+All components are production-ready and follow best practices for security, performance, and maintainability.
+{{/unless}} 
