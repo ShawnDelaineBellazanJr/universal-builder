@@ -182,6 +182,31 @@ namespace UniversalAutonomousBuilder.Models
         /// Adaptations to be applied
         /// </summary>
         public List<string> Adaptations { get; set; } = new List<string>();
+
+        /// <summary>
+        /// The cognitive frequency 
+        /// </summary>
+        public CognitiveFrequency Frequency { get; set; }
+
+        /// <summary>
+        /// The previous interval
+        /// </summary>
+        public TimeSpan PreviousInterval { get; set; }
+
+        /// <summary>
+        /// The new interval
+        /// </summary>
+        public TimeSpan NewInterval { get; set; }
+
+        /// <summary>
+        /// When the adaptation occurred
+        /// </summary>
+        public DateTime Timestamp { get; set; }
+
+        /// <summary>
+        /// The reason for the adaptation
+        /// </summary>
+        public string Reason { get; set; } = string.Empty;
     }
     
     /// <summary>
