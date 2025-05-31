@@ -17,18 +17,21 @@ namespace UniversalAutonomousBuilder.Cognition
         private readonly EconomicConsciousness _economics;
         private readonly AdaptiveScheduler _scheduler;
         private readonly bool _debugMode;
+        private readonly bool _useSKRouter;
         
         public CognitiveFrequencyOrchestrator(
             Kernel kernel, 
             EconomicConsciousness economics,
             AdaptiveScheduler scheduler,
-            bool debugMode = false)
+            bool debugMode = false,
+            bool useSKRouter = true) // Default to using SK-based router
         {
             _kernel = kernel ?? throw new ArgumentNullException(nameof(kernel));
             _chatService = kernel.GetRequiredService<IChatCompletionService>();
             _economics = economics ?? throw new ArgumentNullException(nameof(economics));
             _scheduler = scheduler ?? throw new ArgumentNullException(nameof(scheduler));
             _debugMode = debugMode;
+            _useSKRouter = useSKRouter;
         }
         
         /// <summary>
@@ -41,7 +44,17 @@ namespace UniversalAutonomousBuilder.Cognition
             try
             {
                 // Step 1: Determine the appropriate cognitive frequency
-                var frequency = await DetermineCognitiveFrequencyAsync(goal);
+                CognitiveFrequency frequency;
+                if (_useSKRouter)
+                {
+                    frequency = await DetermineFrequencyWithSKAsync(goal);
+                    Console.WriteLine($"SK-based frequency router selected: {frequency}");
+                }
+                else
+                {
+                    frequency = await DetermineCognitiveFrequencyAsync(goal);
+                    Console.WriteLine($"Keyword-based frequency router selected: {frequency}");
+                }
                 
                 // Step 2: Evaluate the economic value of the goal
                 int economicValue = await _economics.EvaluateGoalValueAsync(goal);
@@ -114,7 +127,60 @@ namespace UniversalAutonomousBuilder.Cognition
         }
         
         /// <summary>
-        /// Determine the appropriate cognitive frequency for a goal
+        /// Determine the appropriate cognitive frequency using Semantic Kernel
+        /// </summary>
+        private async Task<CognitiveFrequency> DetermineFrequencyWithSKAsync(string goal)
+        {
+            try
+            {
+                // Create a prompt for the AI to determine the best frequency
+                string systemMessage = @"
+You are a cognitive frequency router for the multi-frequency cognitive architecture.
+Your task is to determine the most appropriate cognitive frequency for a given goal.
+
+The available frequencies are:
+1. IMMEDIATE (0s): For emergencies, critical issues, security breaches - highest priority tasks requiring instant response
+2. CONTINUOUS (30s): For monitoring, health checks, status tracking - background awareness tasks
+3. ANALYSIS (15m): For problem-solving, planning, designing - tasks requiring deep thought
+4. OPTIMIZATION (2h): For improvements, enhancements, refinements - tasks to make things better
+5. EVOLUTION (24h): For architectural changes, transformations, paradigm shifts - fundamental changes
+
+Consider the nature of the goal, its urgency, complexity, and scope.
+Respond with a single word: IMMEDIATE, CONTINUOUS, ANALYSIS, OPTIMIZATION, or EVOLUTION.
+";
+                string userMessage = $"Goal: {goal}\n\nDetermine the most appropriate cognitive frequency:";
+                
+                var chatHistory = new ChatHistory();
+                chatHistory.AddSystemMessage(systemMessage);
+                chatHistory.AddUserMessage(userMessage);
+                
+                var response = await _chatService.GetChatMessageContentAsync(chatHistory);
+                var content = response.Content?.Trim().ToUpperInvariant() ?? "ANALYSIS";
+                
+                // Parse the response to get the frequency
+                if (content.Contains("IMMEDIATE"))
+                    return CognitiveFrequency.Immediate;
+                else if (content.Contains("CONTINUOUS"))
+                    return CognitiveFrequency.Continuous;
+                else if (content.Contains("ANALYSIS"))
+                    return CognitiveFrequency.Analysis;
+                else if (content.Contains("OPTIMIZATION"))
+                    return CognitiveFrequency.Optimization;
+                else if (content.Contains("EVOLUTION"))
+                    return CognitiveFrequency.Evolution;
+                else
+                    return CognitiveFrequency.Analysis; // Default to Analysis if unable to determine
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in SK-based frequency determination: {ex.Message}");
+                // Fall back to keyword-based determination
+                return await DetermineCognitiveFrequencyAsync(goal);
+            }
+        }
+        
+        /// <summary>
+        /// Determine the appropriate cognitive frequency for a goal using keywords
         /// </summary>
         private async Task<CognitiveFrequency> DetermineCognitiveFrequencyAsync(string goal)
         {
