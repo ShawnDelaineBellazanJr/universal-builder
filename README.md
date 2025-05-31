@@ -41,6 +41,17 @@ The system consists of:
 - GitHub Personal Access Token with repo, workflow, and gist permissions
 - OpenAI API key
 
+### Debug Mode
+
+For local development and testing without GitHub API calls:
+
+1. Set `DEBUG_MODE=true` in your `.env` or `.env.local` file
+2. Files are stored locally in:
+   - `debug_issues/` - For issue tracking
+   - `debug_prs/` - For pull requests
+   - `debug_releases/` - For release history
+3. Create templates in the `templates/` folder to override default templates
+
 ### Setup
 
 1. Fork this repository
