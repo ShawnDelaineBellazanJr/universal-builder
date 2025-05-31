@@ -30,7 +30,7 @@ namespace AutonomousAI
 
         private const string DEFAULT_VALUE_THRESHOLD = "50";
         private const string MODEL_ID = "gpt-4"; // Can be configured based on requirements
-        private const string UNIVERSAL_TEMPLATE_GIST_ID = ""; // Set your default template Gist ID here
+        private const string UNIVERSAL_TEMPLATE_GIST_ID = "defaultTemplates"; // Set your default template Gist ID here
 
         /// <summary>
         /// Constructor for the Universal Builder
@@ -519,7 +519,21 @@ assistant: <answer>\n";
 
                 case "self-evolution":
                     return @"system: You are a Self-Evolution agent in the Universal Builder system. Your job is to propose improvements to the Universal Builder itself.
-user: Analyze the Universal Builder system and propose code improvements. Provide complete code updates, not just suggestions.
+user: Analyze the Universal Builder system and propose code improvements. You must provide complete files, not just code snippets or changes.
+
+Use the following format for your response:
+1. First, explain what issues you've identified and how you'll fix them
+2. For each file you're modifying, include the full code with your changes using the format:
+```csharp:FILENAME
+// Full file content with your changes
+```
+
+Remember: 
+- You must include complete files with all necessary code, not just the parts you're changing
+- Each code block must start with ```csharp:FILENAME to clearly identify which file it's for
+- Your proposed changes should not introduce new bugs or break compatibility
+- Consider improving error handling, performance, security, and overall system robustness
+
 Date: {{datetime}}
 assistant: <answer>\n";
 
@@ -590,7 +604,7 @@ assistant: <answer>\n";
                 string evolutionPlan = await ExecutePromptTemplateAsync(template, variables);
 
                 // Parse the evolution plan and extract code changes
-                if (string.IsNullOrWhiteSpace(evolutionPlan) || !evolutionPlan.Contains("```") || !evolutionPlan.Contains("CHANGES:"))
+                if (string.IsNullOrWhiteSpace(evolutionPlan) || !evolutionPlan.Contains("```"))
                 {
                     Console.WriteLine("No valid evolution plan generated");
                     return;
@@ -602,7 +616,7 @@ assistant: <answer>\n";
 
                 foreach (var block in codeBlocks)
                 {
-                    if (block.StartsWith("csharp") || block.StartsWith("cs"))
+                    if (block.StartsWith("csharp:") || block.StartsWith("cs:"))
                     {
                         // Extract file path and code
                         string[] lines = block.Split('\n', StringSplitOptions.RemoveEmptyEntries);
@@ -610,12 +624,17 @@ assistant: <answer>\n";
                             continue;
 
                         string firstLine = lines[0].Trim();
-                        string filePath = firstLine.StartsWith("csharp") || firstLine.StartsWith("cs") 
-                            ? "UniversalBuilder.cs" // Default to main file if not specified
-                            : firstLine.Replace("csharp:", "").Replace("cs:", "").Trim();
+                        string filePath = firstLine.Replace("csharp:", "").Replace("cs:", "").Trim();
+                        
+                        // Default to main file if path is empty
+                        if (string.IsNullOrWhiteSpace(filePath))
+                        {
+                            filePath = "UniversalBuilder.cs";
+                        }
 
                         string code = string.Join("\n", lines.Skip(1));
                         codeChanges[filePath] = code;
+                        Console.WriteLine($"Found code block for file: {filePath} ({code.Length} characters)");
                     }
                 }
 
@@ -630,13 +649,36 @@ assistant: <answer>\n";
                 string prTitle = $"Self-Evolution: Improvements from {DateTime.UtcNow:yyyy-MM-dd}";
                 string prDescription = $"# Self-Evolution\n\n{evolutionPlan}";
 
-                // In a real implementation, you would:
-                // 1. Create a new branch
-                // 2. Commit file changes
-                // 3. Push the branch
-                // 4. Create a PR
-                // For now, we'll just log what would happen
-                Console.WriteLine($"Self-evolution would create PR '{prTitle}' with changes to {codeChanges.Count} files");
+                // Log the information about what's being changed
+                Console.WriteLine($"Self-evolution creating PR '{prTitle}' with changes to {codeChanges.Count} files");
+                
+                // Write changes to file system - we can't directly interact with git from here,
+                // but we can write files that the GitHub Actions workflow can then commit
+                foreach (var change in codeChanges)
+                {
+                    string filePath = change.Key;
+                    string newContent = change.Value;
+                    
+                    try 
+                    {
+                        // Ensure directory exists
+                        string? directory = Path.GetDirectoryName(filePath);
+                        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                        {
+                            Directory.CreateDirectory(directory);
+                        }
+                        
+                        // Write the new content to the file
+                        File.WriteAllText(filePath, newContent);
+                        Console.WriteLine($"Updated file: {filePath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error writing file {filePath}: {ex.Message}");
+                    }
+                }
+                
+                // The GitHub Actions workflow will detect these changes, create a branch, and make a PR
 
                 // Log the evolution plan to an issue for transparency
                 await _githubMemory.CreateIssueAsync(
