@@ -1,112 +1,111 @@
 # Universal Builder
 
-   A self-evolving system that can build ANY project type using AI, entirely on GitHub Actions. The Universal Builder implements the PMCRO pattern (Planner, Maker, Checker, Reflector, Orchestrator) and uses GitHub as its database.
+A self-evolving AI system running entirely on GitHub Actions that can build anything from a simple description.
 
-## Features
+## Overview
 
-- **GitHub-Native**: Runs entirely in GitHub Actions, no external services required
-- **Strange Loop Self-Evolution**: Modifies its own code via AI-generated PRs
-- **Economic Consciousness**: Makes value-based decisions and refuses undervalued tasks
-- **PMCRO Architecture**: Implements the Planner-Maker-Checker-Reflector-Orchestrator pattern
-- **Template-Driven**: Loads project templates from GitHub Gists
-- **Edge Case Handling**: Robust error handling, retry logic, and fallback strategies
+Universal Builder implements the PMCRO pattern (Planner, Maker, Checker, Reflector, Orchestrator) to create a system that:
 
-## Requirements
+1. **Plans** a solution based on your intent
+2. **Makes** the implementation
+3. **Checks** for issues
+4. **Reflects** on the process
+5. **Orchestrates** everything and determines next steps
 
-- GitHub repository with Actions enabled
-- OpenAI API key (stored as a GitHub Secret)
-- .NET 8.0 or later
-- GitHub token with appropriate permissions
+The system runs entirely on GitHub Actions and uses GitHub itself as its database - storing templates in Gists, work tracking in Issues, history in Releases, and evolving through Pull Requests.
 
-## Setup
+## Key Features
 
-1. Clone this repository
-2. Run the setup script to bootstrap the system:
-
-```bash
-chmod +x setup.sh
-./setup.sh
-```
-
-3. Push the code to your GitHub repository
-4. Configure the following GitHub Secrets:
-   - `OPENAI_API_KEY`: Your OpenAI API key
-   - `DEFAULT_VALUE_THRESHOLD`: Default value threshold for economic decisions (e.g., "50")
-
-## Usage
-
-You can trigger the Universal Builder in two ways:
-
-### 1. Create an Issue
-
-Create a new issue with your build intent in the title. The Universal Builder will automatically analyze the intent, evaluate its economic value, and execute the PMCRO cycle if the value exceeds the threshold.
-
-### 2. Manual Dispatch
-
-Manually trigger the workflow with the following parameters:
-- `intent`: Your build intent (e.g., "Build a RESTful API for task management")
-- `value_threshold` (optional): Value threshold for this specific task
+- **Economic Consciousness**: Evaluates task value against thresholds
+- **Template-Driven Development**: Loads templates from GitHub Gists
+- **GitHub-Native Infrastructure**: Uses GitHub as its database
+- **Self-Evolution**: Creates PRs to improve itself (Strange Loop pattern)
+- **24/7 Autonomous Operation**: Runs on a scheduled basis
 
 ## Architecture
 
-The Universal Builder system consists of the following components:
+The system consists of:
 
-- **UniversalBuilder.cs**: Main implementation of the PMCRO pattern and self-evolution
-- **GitHubMemory.cs**: GitHub-based persistence using Issues, Gists, Secrets, and Releases
-- **universal-builder.yml**: GitHub Actions workflow definition
-- **universal.prompty**: Sample template for generic project builds
+- **UniversalBuilder.cs**: Main implementation with PMCRO pattern
+- **GitHubMemory.cs**: GitHub-based persistence layer
+- **GitHub Actions Workflow**: Triggers the system
+- **Prompty Templates**: Drives the system's behavior
 
-### PMCRO Pattern
+## Getting Started
 
-1. **Planner**: Creates a detailed plan based on the intent
-2. **Maker**: Implements the plan
-3. **Checker**: Verifies the implementation
-4. **Reflector**: Reflects on the process and outcomes
-5. **Orchestrator**: Coordinates the process and decides next steps
+### Prerequisites
 
-### GitHub as a Database
+- GitHub repository
+- GitHub Personal Access Token with repo, workflow, and gist permissions
+- OpenAI API key
 
-- **Gists**: Store templates for different project types
-- **Secrets**: Store economic values and configuration
-- **Issues**: Track work items and progress
-- **Releases**: Store build history and outcomes
+### Setup
+
+1. Fork this repository
+2. Add the following secrets to your repository:
+   - `GITHUB_TOKEN`: Your GitHub Personal Access Token
+   - `OPENAI_API_KEY`: Your OpenAI API key
+   - `DEFAULT_VALUE_THRESHOLD`: Default value threshold (e.g., "50")
+
+### Usage
+
+You can trigger the Universal Builder in three ways:
+
+1. **Manual Trigger**: Go to Actions tab → Universal Builder → Run workflow → Enter your intent
+2. **Issue Creation**: Create a new issue with your intent as the title
+3. **Scheduled Run**: The system runs automatically every 5 minutes to check for work or self-evolve
+
+## How It Works
+
+### The PMCRO Cycle
+
+For each build request, the system:
+
+1. **Planner**: Creates a detailed plan based on your intent
+2. **Maker**: Implements the plan with concrete steps and code
+3. **Checker**: Verifies the implementation against your intent
+4. **Reflector**: Analyzes what worked, what didn't, and why
+5. **Orchestrator**: Decides on next steps and improvements
+
+### Economic Consciousness
+
+Before starting work, the system evaluates the economic value of your request against a threshold. This prevents wasting resources on low-value tasks.
 
 ### Self-Evolution
 
-After completing a build, the Universal Builder analyzes its own code and suggests improvements through GitHub PRs. This creates a "Strange Loop" where the system enhances itself over time.
+The system continuously improves itself by:
 
-## Economic Consciousness
+1. Analyzing its own code and performance
+2. Generating improvements
+3. Creating pull requests with these improvements
+4. Learning from its history to make better decisions
 
-The Universal Builder evaluates the economic value of each task before proceeding:
+## Template System
 
-1. Extracts the intent from the user's request
-2. Evaluates the task value using the `value-evaluator` template
-3. Compares the value to the configured threshold
-4. Refuses undervalued tasks with a detailed explanation
+The system uses Prompty templates stored in GitHub Gists. You can customize these templates to change how the system:
 
-## Customization
+- Plans solutions
+- Implements code
+- Checks for issues
+- Reflects on its work
+- Makes economic decisions
 
-### Templates
+## Extending the System
 
-Create or modify Prompty templates in GitHub Gists to customize the behavior of each PMCRO component. The system will automatically load templates from the configured Gist ID.
+You can extend the Universal Builder by:
 
-### Value Thresholds
-
-Adjust value thresholds in GitHub Secrets to control which tasks the system accepts or rejects.
-
-## Troubleshooting
-
-If you encounter issues:
-
-1. Check the workflow run logs for detailed error messages
-2. Verify that all required secrets are properly configured
-3. Ensure the GitHub token has appropriate permissions
-4. Check for rate limit issues in the GitHub API
-
-## Contributing
-
-Contributions to the Universal Builder are welcome! Please open an issue or PR with your suggested improvements.
+1. Creating custom Prompty templates
+2. Modifying the PMCRO cycle
+3. Adding new persistence mechanisms
+4. Integrating with other systems via GitHub webhooks
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+MIT License
+
+## Acknowledgments
+
+Built using:
+- Microsoft Semantic Kernel 1.54.0
+- Octokit
+- GitHub Actions 
