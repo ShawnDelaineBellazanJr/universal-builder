@@ -16,6 +16,13 @@ Tools for visualizing and analyzing data:
 - **visualize-benchmark-results.py**: Generates charts and graphs from benchmark data.
 - **generate-dashboard.py**: Creates an interactive HTML dashboard for comprehensive analysis.
 
+## Utility Tools
+
+Tools for project maintenance and management:
+
+- **integration-test.sh**: Tests the integrity of the project structure.
+- **update-paths.sh**: Helps update references to old file paths after restructuring.
+
 ## Usage
 
 ### Benchmarking the SK Frequency Router
@@ -42,4 +49,21 @@ python3 visualize-benchmark-results.py [benchmark_results.json]
 ```bash
 cd tools/visualization
 python3 generate-dashboard.py [benchmark_results.json] [output_file.html]
-``` 
+```
+
+### Testing Project Structure Integrity
+
+```bash
+./tools/integration-test.sh
+```
+
+### Updating Path References
+
+```bash
+./tools/update-paths.sh
+```
+
+This will:
+1. Search for references to old file paths
+2. Offer to update these references
+3. Offer to create symbolic links for backwards compatibility 
