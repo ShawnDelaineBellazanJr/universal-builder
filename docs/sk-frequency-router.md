@@ -19,6 +19,7 @@ The SK Frequency Router is a component that intelligently routes tasks to the ap
 | **Performance tracking** | Manual logging | Automated monitoring |
 | **Prompt quality** | N/A | Enhanced, detailed prompts |
 | **Benchmarking** | Not available | Comprehensive comparison |
+| **Visualization** | Not available | Data-driven insights |
 
 ## Implementation Details
 
@@ -125,6 +126,31 @@ The benchmark:
 - Provides sample disagreements for analysis
 - Saves detailed results for further study
 
+## Data Visualization
+
+The system includes visualization tools to analyze benchmark results:
+
+```bash
+./run-benchmark-and-visualize.sh [test_cases]
+```
+
+This script:
+1. Runs the benchmark with the specified number of test cases
+2. Processes the benchmark results
+3. Generates visualizations including:
+   - Frequency distribution chart
+   - Economic value distribution by frequency
+   - Processing time analysis
+   - Performance summary
+
+The visualizations provide:
+- Clear insights into router performance
+- Comparative analysis between approaches
+- Distribution patterns across frequencies
+- Economic value assessments
+
+All visualizations are saved to a timestamped directory for easy reference and comparison over time.
+
 ## Benefits
 
 - **More accurate routing**: Tasks are routed to the most appropriate frequency based on their actual meaning rather than keywords
@@ -134,6 +160,7 @@ The benchmark:
 - **Improved nuance**: Understands degrees of urgency, complexity, etc.
 - **Performance insights**: Tracks routing decisions to enable data-driven improvements
 - **Benchmarking capabilities**: Provides comparative analysis against the previous approach
+- **Visual analytics**: Generates charts and graphs for intuitive performance analysis
 
 ## Testing and Validation
 
@@ -143,6 +170,7 @@ The system includes a comprehensive test suite:
 2. **Comprehensive test**: Tests with a wider range of scenarios across all frequencies
 3. **Performance report**: Generates a detailed report of router performance
 4. **Benchmark comparison**: Compares against the keyword-based approach
+5. **Data visualization**: Provides visual insights into performance metrics
 
 Run the tests using:
 
@@ -156,6 +184,12 @@ Run the benchmark using:
 ./benchmark-frequency-router.sh [number_of_test_cases]
 ```
 
+Run the benchmark with visualization:
+
+```bash
+./run-benchmark-and-visualize.sh [number_of_test_cases]
+```
+
 ## Future Improvements
 
 1. **Adaptive learning**: Train the router on past decisions to improve over time
@@ -165,4 +199,6 @@ Run the benchmark using:
 5. **Dynamic thresholds**: Adjust frequency thresholds based on system load
 6. **Anomaly detection**: Identify unusual routing patterns or poor performance
 7. **Visualization dashboard**: Create a real-time dashboard of router performance
-8. **Pre-trained models**: Fine-tune models specifically for frequency routing 
+8. **Pre-trained models**: Fine-tune models specifically for frequency routing
+9. **A/B testing framework**: Systematically compare different routing strategies
+10. **Integration with monitoring systems**: Connect with broader system metrics 
