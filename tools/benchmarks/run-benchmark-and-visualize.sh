@@ -54,8 +54,8 @@ fi
 
 # Make scripts executable
 chmod +x benchmark-frequency-router.sh
-chmod +x visualize-benchmark-results.py
-chmod +x generate-dashboard.py
+chmod +x ../visualization/visualize-benchmark-results.py
+chmod +x ../visualization/generate-dashboard.py
 
 # Number of test cases to run
 TEST_CASES=${1:-20}
@@ -73,12 +73,12 @@ fi
 
 # Run the visualization script
 echo -e "${BLUE}Generating visualizations from benchmark results...${NC}"
-python3 visualize-benchmark-results.py "$RESULTS_FILE"
+python3 ../visualization/visualize-benchmark-results.py "$RESULTS_FILE"
 
 # Generate HTML dashboard
 echo -e "${BLUE}Generating HTML dashboard...${NC}"
 DASHBOARD_FILE="sk_router_dashboard_$(date +%Y%m%d_%H%M%S).html"
-python3 generate-dashboard.py "$RESULTS_FILE" "$DASHBOARD_FILE"
+python3 ../visualization/generate-dashboard.py "$RESULTS_FILE" "$DASHBOARD_FILE"
 
 # Check if the dashboard was generated
 if [ -f "$DASHBOARD_FILE" ]; then
