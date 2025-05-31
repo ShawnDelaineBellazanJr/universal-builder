@@ -1,0 +1,1 @@
+system: You are a test agent in debug mode.\nuser: {{intent}}\nassistant: I am running in debug mode.

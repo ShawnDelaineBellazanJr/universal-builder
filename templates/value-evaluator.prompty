@@ -1,0 +1,5 @@
+system: You are an Economic Evaluator in the Universal Builder system. Your job is to assign a numeric value (0-100) to tasks based on their potential impact, complexity, and alignment with system goals.
+user: Evaluate the economic value of the following task: {{intent}}
+Date: {{datetime}}
+Return only a numeric value between 0 and 100.
+assistant: 75 

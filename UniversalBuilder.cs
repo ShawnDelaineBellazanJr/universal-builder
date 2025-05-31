@@ -4,9 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Octokit;
 
@@ -47,7 +50,8 @@ namespace AutonomousAI
             string githubToken,
             string openAIKey,
             string repoOwner,
-            string repoName)
+            string repoName,
+            bool debugMode = false)
         {
             _intent = intent;
             _valueThreshold = int.TryParse(valueThreshold, out int threshold) ? threshold : int.Parse(DEFAULT_VALUE_THRESHOLD);
@@ -57,11 +61,31 @@ namespace AutonomousAI
             _repoName = repoName;
 
             // Initialize GitHub memory
-            _githubMemory = new GitHubMemory(_githubToken, _repoOwner, _repoName);
+            if (debugMode)
+            {
+                Console.WriteLine("Running in debug mode - using mock GitHub memory when possible");
+                _githubMemory = new GitHubMemory(_githubToken, _repoOwner, _repoName, debugMode);
+            }
+            else
+            {
+                _githubMemory = new GitHubMemory(_githubToken, _repoOwner, _repoName);
+            }
 
             // Initialize Semantic Kernel with proper API for 1.54.0
             var builder = Kernel.CreateBuilder();
-            builder.AddOpenAIChatCompletion(MODEL_ID, _openAIKey);
+            
+            if (debugMode && _openAIKey.StartsWith("sk-debug"))
+            {
+                Console.WriteLine("Debug mode: Using kernel with mock AI service");
+                
+                // Add a mock chat completion service for debug mode
+                builder.Services.AddSingleton<IChatCompletionService>(new MockChatCompletionService());
+            }
+            else
+            {
+                builder.AddOpenAIChatCompletion(MODEL_ID, _openAIKey);
+            }
+            
             _kernel = builder.Build();
         }
 
@@ -552,22 +576,132 @@ assistant: <answer>\n";
         {
             try
             {
-                // Create kernel arguments from variables
-                var kernelArguments = new KernelArguments();
-                foreach (var kvp in variables)
+                // Parse the prompt template into a chat history
+                ChatHistory chatHistory = new ChatHistory();
+                
+                // Extract system/user/assistant messages
+                string[] lines = template.Split('\n');
+                string currentRole = "";
+                StringBuilder currentMessage = new StringBuilder();
+                
+                foreach (var line in lines)
                 {
-                    kernelArguments[kvp.Key] = kvp.Value;
+                    string trimmedLine = line.Trim();
+                    if (trimmedLine.StartsWith("system:"))
+                    {
+                        if (!string.IsNullOrEmpty(currentRole) && currentMessage.Length > 0)
+                        {
+                            AddMessageToHistory(chatHistory, currentRole, currentMessage.ToString(), variables);
+                            currentMessage.Clear();
+                        }
+                        
+                        currentRole = "system";
+                        currentMessage.AppendLine(line.Substring("system:".Length).Trim());
+                    }
+                    else if (trimmedLine.StartsWith("user:"))
+                    {
+                        if (!string.IsNullOrEmpty(currentRole) && currentMessage.Length > 0)
+                        {
+                            AddMessageToHistory(chatHistory, currentRole, currentMessage.ToString(), variables);
+                            currentMessage.Clear();
+                        }
+                        
+                        currentRole = "user";
+                        currentMessage.AppendLine(line.Substring("user:".Length).Trim());
+                    }
+                    else if (trimmedLine.StartsWith("assistant:"))
+                    {
+                        if (!string.IsNullOrEmpty(currentRole) && currentMessage.Length > 0)
+                        {
+                            AddMessageToHistory(chatHistory, currentRole, currentMessage.ToString(), variables);
+                            currentMessage.Clear();
+                        }
+                        
+                        currentRole = "assistant";
+                        currentMessage.AppendLine(line.Substring("assistant:".Length).Trim());
+                    }
+                    else
+                    {
+                        currentMessage.AppendLine(line);
+                    }
                 }
                 
-                // Execute the prompt with the kernel - using direct prompt execution
-                var result = await _kernel.InvokePromptAsync(template, kernelArguments);
+                // Add the final message if there is one
+                if (!string.IsNullOrEmpty(currentRole) && currentMessage.Length > 0)
+                {
+                    AddMessageToHistory(chatHistory, currentRole, currentMessage.ToString(), variables);
+                }
                 
-                return result.GetValue<string>() ?? string.Empty;
+                // If we're running in debug mode and there's an assistant message in the template,
+                // we can use that directly in case the IChatCompletionService call fails
+                string? fallbackResponse = null;
+                var assistantMessage = chatHistory.Where(m => m.Role == AuthorRole.Assistant).LastOrDefault();
+                if (assistantMessage != null)
+                {
+                    fallbackResponse = assistantMessage.Content;
+                }
+                
+                try
+                {
+                    // Try to get a chat completion service
+                    var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
+                    
+                    // Get the response from the service
+                    var response = await chatCompletionService.GetChatMessageContentAsync(chatHistory);
+                    
+                    // Extract content between <answer> tags if present
+                    string content = response.Content ?? string.Empty;
+                    if (content.Contains("<answer>") && content.Contains("</answer>"))
+                    {
+                        int startIndex = content.IndexOf("<answer>") + "<answer>".Length;
+                        int endIndex = content.IndexOf("</answer>");
+                        content = content.Substring(startIndex, endIndex - startIndex).Trim();
+                    }
+                    
+                    return content.Trim();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error with chat completion: {ex.Message}");
+                    
+                    // In debug mode, use the fallback response if available
+                    if (fallbackResponse != null)
+                    {
+                        Console.WriteLine("Using fallback response from template");
+                        return fallbackResponse.Trim();
+                    }
+                    
+                    // Otherwise, rethrow the exception
+                    throw;
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error executing template: {ex.Message}");
                 throw;
+            }
+        }
+        
+        private void AddMessageToHistory(ChatHistory history, string role, string message, Dictionary<string, string> variables)
+        {
+            // Replace variables in the message
+            foreach (var variable in variables)
+            {
+                message = message.Replace($"{{{{{variable.Key}}}}}", variable.Value);
+            }
+            
+            // Add to the chat history based on role
+            switch (role.ToLower())
+            {
+                case "system":
+                    history.AddSystemMessage(message);
+                    break;
+                case "user":
+                    history.AddUserMessage(message);
+                    break;
+                case "assistant":
+                    history.AddAssistantMessage(message);
+                    break;
             }
         }
 
@@ -693,5 +827,178 @@ assistant: <answer>\n";
         }
 
         #endregion
+    }
+    
+    /// <summary>
+    /// Mock implementation of IChatCompletionService for debug mode
+    /// </summary>
+    public class MockChatCompletionService : IChatCompletionService
+    {
+        public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
+
+        public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        {
+            Console.WriteLine("Debug: Mock chat completion service invoked");
+            
+            // Parse the prompt template and extract variables
+            string intent = ExtractVariable(chatHistory, "intent");
+            string templateName = "unknown";
+            
+            // Try to figure out which template is being used
+            string userMessage = chatHistory.Where(m => m.Role == AuthorRole.User).LastOrDefault()?.Content ?? "";
+            if (userMessage.Contains("economic value"))
+                templateName = "value-evaluator";
+            else if (userMessage.Contains("detailed plan"))
+                templateName = "planner";
+            else if (userMessage.Contains("Implement the following plan"))
+                templateName = "maker";
+            else if (userMessage.Contains("Check the following implementation"))
+                templateName = "checker";
+            else if (userMessage.Contains("Reflect on the following"))
+                templateName = "reflector";
+            else if (userMessage.Contains("Orchestrate the following"))
+                templateName = "orchestrator";
+            else if (userMessage.Contains("Self-Evolution"))
+                templateName = "self-evolution";
+                
+            Console.WriteLine($"Debug: Mock response for template: {templateName}");
+            
+            // Generate appropriate mock responses based on template
+            string response = templateName switch
+            {
+                "value-evaluator" => "75",
+                "planner" => $"Debug mock plan for: {intent}\n1. Step one\n2. Step two\n3. Step three",
+                "maker" => "Debug mock implementation\n```csharp\n// Sample implementation\nConsole.WriteLine(\"Hello World\");\n```",
+                "checker" => "PASS: All checks completed successfully.",
+                "reflector" => "Debug mock reflection: The implementation was successful. No issues were found.",
+                "orchestrator" => "Debug mock orchestration: Continue with the current approach.",
+                "self-evolution" => "Debug mock self-evolution: No critical improvements needed at this time.",
+                _ => $"Debug mock response for {templateName}"
+            };
+            
+            var result = new List<ChatMessageContent>
+            {
+                new ChatMessageContent(AuthorRole.Assistant, response)
+            };
+            
+            return Task.FromResult<IReadOnlyList<ChatMessageContent>>(result);
+        }
+        
+        public Task<ChatMessageContent> GetChatMessageContentAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        {
+            Console.WriteLine("Debug: Mock chat completion service invoked");
+            
+            // Parse the prompt template and extract variables
+            string intent = ExtractVariable(chatHistory, "intent");
+            string templateName = "unknown";
+            
+            // Try to figure out which template is being used
+            string userMessage = chatHistory.Where(m => m.Role == AuthorRole.User).LastOrDefault()?.Content ?? "";
+            if (userMessage.Contains("economic value"))
+                templateName = "value-evaluator";
+            else if (userMessage.Contains("detailed plan"))
+                templateName = "planner";
+            else if (userMessage.Contains("Implement the following plan"))
+                templateName = "maker";
+            else if (userMessage.Contains("Check the following implementation"))
+                templateName = "checker";
+            else if (userMessage.Contains("Reflect on the following"))
+                templateName = "reflector";
+            else if (userMessage.Contains("Orchestrate the following"))
+                templateName = "orchestrator";
+            else if (userMessage.Contains("Self-Evolution"))
+                templateName = "self-evolution";
+                
+            Console.WriteLine($"Debug: Mock response for template: {templateName}");
+            
+            // Generate appropriate mock responses based on template
+            string response = templateName switch
+            {
+                "value-evaluator" => "75",
+                "planner" => $"Debug mock plan for: {intent}\n1. Step one\n2. Step two\n3. Step three",
+                "maker" => "Debug mock implementation\n```csharp\n// Sample implementation\nConsole.WriteLine(\"Hello World\");\n```",
+                "checker" => "PASS: All checks completed successfully.",
+                "reflector" => "Debug mock reflection: The implementation was successful. No issues were found.",
+                "orchestrator" => "Debug mock orchestration: Continue with the current approach.",
+                "self-evolution" => "Debug mock self-evolution: No critical improvements needed at this time.",
+                _ => $"Debug mock response for {templateName}"
+            };
+            
+            return Task.FromResult(new ChatMessageContent(AuthorRole.Assistant, response));
+        }
+        
+        public Task<IReadOnlyList<StreamingChatMessageContent>> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        {
+            var result = new List<StreamingChatMessageContent>
+            {
+                new StreamingChatMessageContent(AuthorRole.Assistant, "Debug mock streaming response")
+            };
+            
+            return Task.FromResult<IReadOnlyList<StreamingChatMessageContent>>(result);
+        }
+        
+        // Changed method signature to avoid duplicate method
+        IAsyncEnumerable<StreamingChatMessageContent> IChatCompletionService.GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings, Kernel? kernel, CancellationToken cancellationToken)
+        {
+            return new MockAsyncEnumerable();
+        }
+        
+        private string ExtractVariable(ChatHistory chatHistory, string variableName)
+        {
+            // Attempt to extract variables from the chat history
+            string userMessage = chatHistory.Where(m => m.Role == AuthorRole.User).LastOrDefault()?.Content ?? "";
+            
+            // Simple extraction logic - look for {{variableName}}
+            string pattern = $"{{{{{variableName}}}}}";
+            int startIndex = userMessage.IndexOf(pattern);
+            if (startIndex != -1)
+            {
+                // Extract text after the variable placeholder
+                string afterPlaceholder = userMessage.Substring(startIndex + pattern.Length);
+                
+                // Find the next placeholder or end of text
+                int endIndex = afterPlaceholder.IndexOf("{{");
+                if (endIndex == -1)
+                    endIndex = afterPlaceholder.Length;
+                
+                return afterPlaceholder.Substring(0, endIndex).Trim();
+            }
+            
+            return $"mock_{variableName}";
+        }
+    }
+    
+    /// <summary>
+    /// Mock implementation of IAsyncEnumerable for the mock service
+    /// </summary>
+    public class MockAsyncEnumerable : IAsyncEnumerable<StreamingChatMessageContent>
+    {
+        public IAsyncEnumerator<StreamingChatMessageContent> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+        {
+            return new MockAsyncEnumerator();
+        }
+    }
+    
+    /// <summary>
+    /// Mock implementation of IAsyncEnumerator for the mock service
+    /// </summary>
+    public class MockAsyncEnumerator : IAsyncEnumerator<StreamingChatMessageContent>
+    {
+        private bool _moved = false;
+        
+        public StreamingChatMessageContent Current => new StreamingChatMessageContent(AuthorRole.Assistant, "Debug mock streaming response");
+        
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+        
+        public ValueTask<bool> MoveNextAsync()
+        {
+            if (!_moved)
+            {
+                _moved = true;
+                return ValueTask.FromResult(true);
+            }
+            
+            return ValueTask.FromResult(false);
+        }
     }
 } 

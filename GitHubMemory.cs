@@ -26,9 +26,10 @@ namespace AutonomousAI
         private readonly string _owner;
         private readonly string _repo;
         private readonly HttpClient _httpClient;
+        private readonly bool _debugMode;
         private const int MaxRetries = 5;
 
-        public GitHubMemory(string token, string owner, string repo)
+        public GitHubMemory(string token, string owner, string repo, bool debugMode = false)
         {
             if (string.IsNullOrEmpty(token))
                 throw new ArgumentException("GitHub token cannot be null or empty", nameof(token));
@@ -41,6 +42,7 @@ namespace AutonomousAI
             
             _owner = owner;
             _repo = repo;
+            _debugMode = debugMode;
             
             var credentials = new Credentials(token);
             _client = new GitHubClient(new ProductHeaderValue("UniversalBuilder"), new InMemoryCredentialStore(credentials));
@@ -48,6 +50,11 @@ namespace AutonomousAI
             _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "UniversalBuilder");
             _httpClient.DefaultRequestHeaders.Add("Authorization", $"token {token}");
+            
+            if (_debugMode)
+            {
+                Console.WriteLine("GitHubMemory initialized in debug mode - some operations will be mocked");
+            }
         }
 
         #region Template Management (Gists)
@@ -59,6 +66,20 @@ namespace AutonomousAI
         {
             if (string.IsNullOrEmpty(gistId))
                 throw new ArgumentException("Gist ID cannot be null or empty", nameof(gistId));
+            
+            // In debug mode, return from local templates if available, otherwise use default templates
+            if (_debugMode)
+            {
+                string templatePath = Path.Combine("templates", fileName ?? "default.prompty");
+                if (File.Exists(templatePath))
+                {
+                    Console.WriteLine($"Debug mode: Loading template from local file: {templatePath}");
+                    return await File.ReadAllTextAsync(templatePath);
+                }
+                
+                Console.WriteLine($"Debug mode: No local template found, using default templates");
+                return string.Empty; // Empty will trigger default templates
+            }
             
             return await ExecuteWithRetryAsync(async () =>
             {
@@ -181,6 +202,37 @@ namespace AutonomousAI
             if (string.IsNullOrEmpty(title))
                 throw new ArgumentException("Issue title cannot be null or empty", nameof(title));
             
+            // In debug mode, simulate issue creation
+            if (_debugMode)
+            {
+                Console.WriteLine($"Debug mode: Simulating issue creation: {title}");
+                Console.WriteLine($"Labels: {(labels != null ? string.Join(", ", labels) : "none")}");
+                Console.WriteLine($"Description: {description}");
+                
+                // Create a directory for local issue tracking if it doesn't exist
+                Directory.CreateDirectory("debug_issues");
+                
+                // Generate a fake issue number
+                int issueNumber = new Random().Next(100, 1000);
+                
+                // Save issue info to a local file
+                string issuePath = Path.Combine("debug_issues", $"issue_{issueNumber}.json");
+                var issueData = new 
+                {
+                    Number = issueNumber,
+                    Title = title,
+                    Body = description,
+                    Labels = labels ?? Array.Empty<string>(),
+                    State = "open",
+                    CreatedAt = DateTime.UtcNow,
+                    Comments = new List<object>()
+                };
+                
+                await File.WriteAllTextAsync(issuePath, JsonSerializer.Serialize(issueData, new JsonSerializerOptions { WriteIndented = true }));
+                
+                return issueNumber;
+            }
+            
             return await ExecuteWithRetryAsync(async () =>
             {
                 var newIssue = new NewIssue(title)
@@ -206,6 +258,51 @@ namespace AutonomousAI
         /// </summary>
         public async Task UpdateIssueAsync(int issueNumber, string? title = null, string? description = null, ItemState? state = null)
         {
+            // In debug mode, simulate updating an issue
+            if (_debugMode)
+            {
+                Console.WriteLine($"Debug mode: Updating issue #{issueNumber}");
+                if (!string.IsNullOrEmpty(title))
+                    Console.WriteLine($"New title: {title}");
+                if (!string.IsNullOrEmpty(description))
+                    Console.WriteLine($"New description: {description}");
+                if (state.HasValue)
+                    Console.WriteLine($"New state: {state}");
+                
+                // If we have a debug issue file, update it
+                string issuePath = Path.Combine("debug_issues", $"issue_{issueNumber}.json");
+                if (File.Exists(issuePath))
+                {
+                    try
+                    {
+                        string issueJson = await File.ReadAllTextAsync(issuePath);
+                        var issueData = JsonSerializer.Deserialize<Dictionary<string, object>>(issueJson);
+                        if (issueData != null)
+                        {
+                            // Update the issue properties
+                            if (!string.IsNullOrEmpty(title))
+                                issueData["Title"] = title;
+                            
+                            if (!string.IsNullOrEmpty(description))
+                                issueData["Body"] = description;
+                            
+                            if (state.HasValue)
+                                issueData["State"] = state.ToString().ToLower();
+                            
+                            // Save updated issue
+                            await File.WriteAllTextAsync(issuePath, 
+                                JsonSerializer.Serialize(issueData, new JsonSerializerOptions { WriteIndented = true }));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Debug mode: Error updating issue file: {ex.Message}");
+                    }
+                }
+                
+                return;
+            }
+            
             await ExecuteWithRetryAsync(async () =>
             {
                 var issueUpdate = new IssueUpdate();
@@ -243,6 +340,74 @@ namespace AutonomousAI
             if (string.IsNullOrEmpty(comment))
                 throw new ArgumentException("Comment cannot be null or empty", nameof(comment));
             
+            // In debug mode, simulate adding a comment
+            if (_debugMode)
+            {
+                Console.WriteLine($"Debug mode: Adding comment to issue #{issueNumber}:");
+                Console.WriteLine(comment);
+                
+                // If we have a debug issue file, update it
+                string issuePath = Path.Combine("debug_issues", $"issue_{issueNumber}.json");
+                if (File.Exists(issuePath))
+                {
+                    try
+                    {
+                        string issueJson = await File.ReadAllTextAsync(issuePath);
+                        var issueData = JsonSerializer.Deserialize<Dictionary<string, object>>(issueJson);
+                        if (issueData != null)
+                        {
+                            // Generate a unique comment ID
+                            int commentId = new Random().Next(1000, 9999);
+                            
+                            // Add the comment
+                            if (issueData.TryGetValue("Comments", out var commentsObj) && 
+                                commentsObj is JsonElement commentsElement &&
+                                commentsElement.ValueKind == JsonValueKind.Array)
+                            {
+                                // Convert existing comments
+                                var comments = new List<object>();
+                                foreach (var element in commentsElement.EnumerateArray())
+                                {
+                                    if (element.ValueKind == JsonValueKind.Object)
+                                    {
+                                        var commentObj = new Dictionary<string, object>();
+                                        foreach (var prop in element.EnumerateObject())
+                                        {
+                                            commentObj[prop.Name] = prop.Value.GetRawText() ?? "";
+                                        }
+                                        comments.Add(commentObj);
+                                    }
+                                }
+                                
+                                // Add new comment
+                                comments.Add(new 
+                                {
+                                    Id = commentId,
+                                    Body = comment,
+                                    CreatedAt = DateTime.UtcNow.ToString("o")
+                                });
+                                
+                                // Update issue data
+                                issueData["Comments"] = comments;
+                                
+                                // Save updated issue
+                                await File.WriteAllTextAsync(issuePath, 
+                                    JsonSerializer.Serialize(issueData, new JsonSerializerOptions { WriteIndented = true }));
+                            }
+                            
+                            return commentId;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Debug mode: Error updating issue file: {ex.Message}");
+                    }
+                }
+                
+                // Return a mock ID
+                return new Random().Next(1000, 9999);
+            }
+            
             return await ExecuteWithRetryAsync(async () =>
             {
                 var issueComment = await _client.Issue.Comment.Create(_owner, _repo, issueNumber, comment);
@@ -265,6 +430,36 @@ namespace AutonomousAI
             if (string.IsNullOrEmpty(title))
                 throw new ArgumentException("Title cannot be null or empty", nameof(title));
             
+            // In debug mode, simulate creating a release
+            if (_debugMode)
+            {
+                Console.WriteLine($"Debug mode: Creating release '{title}' with tag '{tag}'");
+                Console.WriteLine($"Description: {description}");
+                
+                // Create directory for debug releases if it doesn't exist
+                Directory.CreateDirectory("debug_releases");
+                
+                // Generate a mock release ID
+                string releaseId = new Random().Next(1000, 9999).ToString();
+                
+                // Save release info to a file
+                string releasePath = Path.Combine("debug_releases", $"release_{releaseId}.json");
+                var releaseData = new
+                {
+                    Id = releaseId,
+                    Tag = tag,
+                    Name = title,
+                    Body = description,
+                    Prerelease = prerelease,
+                    CreatedAt = DateTime.UtcNow
+                };
+                
+                await File.WriteAllTextAsync(releasePath, 
+                    JsonSerializer.Serialize(releaseData, new JsonSerializerOptions { WriteIndented = true }));
+                
+                return releaseId;
+            }
+            
             return await ExecuteWithRetryAsync(async () =>
             {
                 var newRelease = new NewRelease(tag)
@@ -284,6 +479,76 @@ namespace AutonomousAI
         /// </summary>
         public async Task<IReadOnlyList<Release>> GetReleasesAsync(int count = 10)
         {
+            // In debug mode, simulate getting releases
+            if (_debugMode)
+            {
+                Console.WriteLine($"Debug mode: Getting {count} releases");
+                
+                // Check if we have any debug releases
+                if (Directory.Exists("debug_releases"))
+                {
+                    try
+                    {
+                        // Get all release files
+                        var releaseFiles = Directory.GetFiles("debug_releases", "release_*.json");
+                        
+                        // Sort by creation time (newest first)
+                        Array.Sort(releaseFiles, (a, b) => 
+                            File.GetCreationTime(b).CompareTo(File.GetCreationTime(a)));
+                        
+                        // Limit to requested count
+                        if (releaseFiles.Length > count)
+                        {
+                            releaseFiles = releaseFiles.Take(count).ToArray();
+                        }
+                        
+                        // Create mock releases
+                        var releases = new List<Release>();
+                        foreach (var file in releaseFiles)
+                        {
+                            try
+                            {
+                                string releaseJson = await File.ReadAllTextAsync(file);
+                                var releaseData = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(releaseJson);
+                                if (releaseData != null)
+                                {
+                                    // Create a simple mock release object using reflection to bypass the constructor signature issues
+                                    var release = new Release();
+                                    
+                                    // Set required properties using reflection
+                                    var idValue = long.Parse(releaseData["Id"].GetString() ?? "0");
+                                    var tagValue = releaseData["Tag"].GetString() ?? "";
+                                    var nameValue = releaseData["Name"].GetString() ?? "";
+                                    var bodyValue = releaseData["Body"].GetString() ?? "";
+                                    var prelease = releaseData["Prerelease"].ValueKind == JsonValueKind.True;
+                                    
+                                    // Use reflection to set private fields if needed
+                                    typeof(Release).GetProperty("Id")?.SetValue(release, idValue);
+                                    typeof(Release).GetProperty("TagName")?.SetValue(release, tagValue);
+                                    typeof(Release).GetProperty("Name")?.SetValue(release, nameValue);
+                                    typeof(Release).GetProperty("Body")?.SetValue(release, bodyValue);
+                                    
+                                    releases.Add(release);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Debug mode: Error parsing release file {file}: {ex.Message}");
+                            }
+                        }
+                        
+                        return releases;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Debug mode: Error getting releases: {ex.Message}");
+                    }
+                }
+                
+                // If no releases or error, return empty list
+                return new List<Release>();
+            }
+            
             return await ExecuteWithRetryAsync(async () =>
             {
                 var options = new ApiOptions
@@ -310,6 +575,37 @@ namespace AutonomousAI
             
             if (string.IsNullOrEmpty(head))
                 throw new ArgumentException("Head branch cannot be null or empty", nameof(head));
+            
+            // In debug mode, simulate creating a PR
+            if (_debugMode)
+            {
+                Console.WriteLine($"Debug mode: Creating PR '{title}' from '{head}' to '{baseBranch}'");
+                Console.WriteLine($"Description: {description}");
+                
+                // Create directory for debug PRs if it doesn't exist
+                Directory.CreateDirectory("debug_prs");
+                
+                // Generate a mock PR number
+                int prNumber = new Random().Next(100, 999);
+                
+                // Save PR info to a file
+                string prPath = Path.Combine("debug_prs", $"pr_{prNumber}.json");
+                var prData = new
+                {
+                    Number = prNumber,
+                    Title = title,
+                    Body = description,
+                    Head = head,
+                    Base = baseBranch,
+                    CreatedAt = DateTime.UtcNow,
+                    State = "open"
+                };
+                
+                await File.WriteAllTextAsync(prPath, 
+                    JsonSerializer.Serialize(prData, new JsonSerializerOptions { WriteIndented = true }));
+                
+                return prNumber;
+            }
             
             return await ExecuteWithRetryAsync(async () =>
             {
