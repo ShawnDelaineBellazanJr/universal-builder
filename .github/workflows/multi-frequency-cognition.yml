@@ -32,6 +32,7 @@ env:
   AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   ECONOMIC_THRESHOLDS: '{"immediate":95,"continuous":50,"analysis":70,"optimization":85,"evolution":90}'
+  DEMO_PROJECT: 'multi-frequency-cognitive-demo/CognitiveSystemDemo.csproj'
 
 jobs:
   cognitive-frequency-router:
@@ -87,7 +88,7 @@ jobs:
           fi
           
           # Evaluate economic value
-          economic_value=$(dotnet run -- evaluate-goal-value --goal="$goal")
+          economic_value=$(dotnet run --project $DEMO_PROJECT -- evaluate-goal-value --goal="$goal")
           echo "economic_value=$economic_value" >> $GITHUB_OUTPUT
           echo "Economic value: $economic_value"
       
@@ -141,7 +142,7 @@ jobs:
           echo "Goal: ${{ github.event.inputs.goal || github.event.issue.title || github.event.pull_request.title }}"
           
           # Process critical goal using the CognitiveFrequencyOrchestrator
-          dotnet run -- cognitive-process \
+          dotnet run --project $DEMO_PROJECT -- cognitive-process \
             --frequency immediate \
             --goal "${{ github.event.inputs.goal || github.event.issue.title || github.event.pull_request.title }}" \
             --economic-value ${{ needs.cognitive-frequency-router.outputs.economic_value }}
@@ -168,7 +169,7 @@ jobs:
           # Execute multiple monitoring cycles within the job
           for i in {1..2}; do
             echo "Monitoring cycle $i"
-            dotnet run -- cognitive-process \
+            dotnet run --project $DEMO_PROJECT -- cognitive-process \
               --frequency continuous \
               --goal "continuous monitoring cycle $i" \
               --economic-value ${{ needs.cognitive-frequency-router.outputs.economic_value }}
@@ -197,7 +198,7 @@ jobs:
           echo "Goal: ${{ github.event.inputs.goal || 'scheduled analysis cycle' }}"
           
           # Process goal with analysis frequency
-          dotnet run -- cognitive-process \
+          dotnet run --project $DEMO_PROJECT -- cognitive-process \
             --frequency analysis \
             --goal "${{ github.event.inputs.goal || 'analyze patterns and insights' }}" \
             --economic-value ${{ needs.cognitive-frequency-router.outputs.economic_value }}
@@ -224,7 +225,7 @@ jobs:
           echo "Self-improvement and template evolution"
           
           # Process goal with optimization frequency
-          dotnet run -- cognitive-process \
+          dotnet run --project $DEMO_PROJECT -- cognitive-process \
             --frequency optimization \
             --goal "${{ github.event.inputs.goal || 'optimize system performance' }}" \
             --economic-value ${{ needs.cognitive-frequency-router.outputs.economic_value }}
@@ -245,7 +246,7 @@ jobs:
             git checkout -b $branch
             
             # Apply template improvements
-            dotnet run -- apply-template-improvements --file template_improvements.json
+            dotnet run --project $DEMO_PROJECT -- apply-template-improvements --file template_improvements.json
             
             # Check if there are changes
             if [ -n "$(git status --porcelain)" ]; then
@@ -288,7 +289,7 @@ jobs:
           echo "Architectural metamorphosis"
           
           # Process goal with evolution frequency
-          dotnet run -- cognitive-process \
+          dotnet run --project $DEMO_PROJECT -- cognitive-process \
             --frequency evolution \
             --goal "${{ github.event.inputs.goal || 'evolve system architecture' }}" \
             --economic-value ${{ needs.cognitive-frequency-router.outputs.economic_value }}
@@ -309,7 +310,7 @@ jobs:
             git checkout -b $branch
             
             # Apply architectural changes
-            dotnet run -- apply-architecture-changes --file architecture_changes.json
+            dotnet run --project $DEMO_PROJECT -- apply-architecture-changes --file architecture_changes.json
             
             # Check if there are changes
             if [ -n "$(git status --porcelain)" ]; then
@@ -372,7 +373,7 @@ jobs:
           echo '${{ toJson(needs) }}' > outcome_data.json
           
           # Execute adaptive learning
-          dotnet run -- adaptive-learn \
+          dotnet run --project $DEMO_PROJECT -- adaptive-learn \
             --frequency-used "${{ needs.cognitive-frequency-router.outputs.frequency }}" \
             --economic-value ${{ needs.cognitive-frequency-router.outputs.economic_value || 50 }} \
             --outcome-file outcome_data.json
@@ -393,7 +394,7 @@ jobs:
             git checkout -b $branch
             
             # Apply frequency adaptations to workflow
-            dotnet run -- apply-frequency-adaptations \
+            dotnet run --project $DEMO_PROJECT -- apply-frequency-adaptations \
               --file frequency_adaptations.json \
               --workflow .github/workflows/multi-frequency-cognition.yml
             
@@ -431,6 +432,6 @@ jobs:
 # ✅ Self-modification capabilities for all components
 # ✅ Goal-driven processing with multi-frequency routing
 #
-# Last modified: 2023-07-10
-# Modification reason: Initial implementation of multi-frequency cognitive architecture
-# Next scheduled evolution: 2023-07-11 
+# Last modified: 2023-07-15
+# Modification reason: Updated to use multi-frequency-cognitive-demo
+# Next scheduled evolution: 2023-07-16 
