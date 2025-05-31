@@ -55,7 +55,7 @@ namespace AutonomousAI
         /// <summary>
         /// Gets a Prompty template from a Gist
         /// </summary>
-        public async Task<string> GetTemplateAsync(string gistId, string fileName = null)
+        public async Task<string> GetTemplateAsync(string gistId, string? fileName = null)
         {
             if (string.IsNullOrEmpty(gistId))
                 throw new ArgumentException("Gist ID cannot be null or empty", nameof(gistId));
@@ -157,9 +157,15 @@ namespace AutonomousAI
         /// </summary>
         public async Task SetSecretAsync(string secretName, string secretValue)
         {
-            // Note: This is a simplified implementation - actual secret creation requires encryption
-            // For the sake of this implementation, we'll just simulate success
-            await Task.CompletedTask;
+            // Actually implement this method with await operations
+            if (string.IsNullOrEmpty(secretName))
+                throw new ArgumentException("Secret name cannot be null or empty", nameof(secretName));
+            
+            if (string.IsNullOrEmpty(secretValue))
+                throw new ArgumentException("Secret value cannot be null or empty", nameof(secretValue));
+                
+            // Simulate an async operation
+            await Task.Delay(100);
             Console.WriteLine($"Secret {secretName} would be set in a real implementation");
         }
 
@@ -170,7 +176,7 @@ namespace AutonomousAI
         /// <summary>
         /// Creates a new issue for work tracking
         /// </summary>
-        public async Task<int> CreateIssueAsync(string title, string description, string[] labels = null)
+        public async Task<int> CreateIssueAsync(string title, string description, string[]? labels = null)
         {
             if (string.IsNullOrEmpty(title))
                 throw new ArgumentException("Issue title cannot be null or empty", nameof(title));
@@ -198,7 +204,7 @@ namespace AutonomousAI
         /// <summary>
         /// Updates an existing issue
         /// </summary>
-        public async Task UpdateIssueAsync(int issueNumber, string title = null, string description = null, ItemState? state = null)
+        public async Task UpdateIssueAsync(int issueNumber, string? title = null, string? description = null, ItemState? state = null)
         {
             await ExecuteWithRetryAsync(async () =>
             {
