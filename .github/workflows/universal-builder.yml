@@ -28,6 +28,21 @@ jobs:
       with:
         dotnet-version: '9.0.x'
         
+    - name: Debug environment
+      run: |
+        echo "GITHUB_REPOSITORY: $GITHUB_REPOSITORY"
+        echo "GITHUB_ACTOR: $GITHUB_ACTOR"
+        echo "GITHUB_EVENT_NAME: $GITHUB_EVENT_NAME"
+        echo "GITHUB_REF: $GITHUB_REF"
+        echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+        echo "RUNNER_OS: $RUNNER_OS"
+        echo ".NET version:"
+        dotnet --version
+        echo "Installed .NET SDKs:"
+        dotnet --list-sdks
+        echo "Installed .NET runtimes:"
+        dotnet --list-runtimes
+        
     - name: Restore dependencies
       run: dotnet restore
         
@@ -76,7 +91,18 @@ jobs:
       run: |
         echo "Running with intent: $INTENT"
         echo "Value threshold: $VALUE_THRESHOLD"
-        dotnet run --project . --configuration Release -- "$INTENT" "$VALUE_THRESHOLD"
+        # Display Git info for debugging
+        echo "Git configuration:"
+        git config --list
+        # Run with increased verbosity
+        dotnet run --project . --configuration Release -- "$INTENT" "$VALUE_THRESHOLD" 2>&1 | tee builder_output.log
+        
+    - name: Upload build log
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: builder-logs
+        path: builder_output.log
         
     - name: Create PR for self-evolution (if changes detected)
       if: success()
