@@ -32,6 +32,7 @@ The system follows a PMCRO pattern (Planner, Maker, Checker, Reflector, Orchestr
 - **Project Type Templates**: Specialized for various project types (iOS, web, etc.)
 - **Multi-Frequency Cognition**: Processes at five different time scales (0s, 30s, 15m, 2h, 24h)
 - **SK Evolution Engine**: Autonomous system for evolving codebase using Semantic Kernel
+- **SK Frequency Router**: Intelligently routes tasks to appropriate cognitive frequencies using Semantic Kernel
 
 ## Architecture
 
@@ -44,6 +45,7 @@ The system consists of:
 - **GitHub Integration Layer**: Interfaces with GitHub APIs
 - **Cognitive Layer**: Implements multi-frequency cognitive processes
 - **SK Evolution Layer**: Analyzes and evolves codebase using SK
+- **Frequency Routing Layer**: Routes tasks to appropriate cognitive frequencies
 
 ## Getting Started
 
@@ -128,6 +130,11 @@ For local development and testing without GitHub API calls:
   ./run-sk-evolution.sh implement-improvements
   ```
 
+- **test-frequency-router**: Tests the SK Frequency Router
+  ```bash
+  ./run-sk-frequency-router-test.sh
+  ```
+
 ## Multi-Frequency Cognitive Architecture
 
 The system implements a multi-frequency cognitive architecture with five frequencies:
@@ -139,6 +146,23 @@ The system implements a multi-frequency cognitive architecture with five frequen
 - **Evolution (24h)**: Long-term evolution processes for system improvement
 
 Each frequency has its own economic threshold (95, 50, 70, 85, 90) to determine when processing at that level is justified.
+
+### SK Frequency Router
+
+The SK Frequency Router is a Semantic Kernel-based component that intelligently routes tasks to the appropriate cognitive frequency based on:
+
+- Task urgency and complexity
+- Economic value assessment
+- Available resources and constraints
+- Task context and goals
+
+It replaces keyword-based routing with AI-powered semantic analysis, ensuring tasks are processed at the most efficient frequency. The router:
+
+1. Analyzes the goal and context using Semantic Kernel
+2. Determines the most appropriate cognitive frequency
+3. Calculates the economic value of processing at that frequency
+4. Compares the economic value against frequency thresholds
+5. Routes the task to the appropriate processor
 
 ## SK Evolution Engine
 
