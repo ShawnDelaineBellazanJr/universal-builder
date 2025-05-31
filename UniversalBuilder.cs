@@ -538,27 +538,15 @@ assistant: <answer>\n";
         {
             try
             {
-                // Create a handlebars prompt template
-                var handlebarsPrompt = new HandlebarsPromptTemplate(template);
-                
-                // Create prompt template config
-                var promptConfig = new PromptTemplateConfig
-                {
-                    Template = template
-                };
-                
-                // Prepare kernel arguments from variables
+                // Create kernel arguments from variables
                 var kernelArguments = new KernelArguments();
                 foreach (var kvp in variables)
                 {
                     kernelArguments[kvp.Key] = kvp.Value;
                 }
-
-                // Render the prompt with variables
-                var renderedPrompt = await handlebarsPrompt.RenderAsync(_kernel, kernelArguments);
                 
-                // Execute the prompt with the kernel
-                var result = await _kernel.InvokePromptAsync(renderedPrompt, kernelArguments);
+                // Execute the prompt with the kernel - using direct prompt execution
+                var result = await _kernel.InvokePromptAsync(template, kernelArguments);
                 
                 return result.GetValue<string>() ?? string.Empty;
             }
@@ -663,66 +651,5 @@ assistant: <answer>\n";
         }
 
         #endregion
-
-        /// <summary>
-        /// Program entry point
-        /// </summary>
-        /// <param name="args">Command line arguments</param>
-        public static async Task Main(string[] args)
-        {
-            try
-            {
-                // Parse command line arguments
-                if (args.Length < 1)
-                {
-                    Console.WriteLine("Usage: UniversalBuilder <intent> [valueThreshold]");
-                    return;
-                }
-
-                string intent = args[0];
-                string valueThreshold = args.Length > 1 ? args[1] : DEFAULT_VALUE_THRESHOLD;
-
-                // Get configuration from environment variables
-                string githubToken = Environment.GetEnvironmentVariable("GITHUB_TOKEN");
-                string openAIKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
-                string repoOwner = Environment.GetEnvironmentVariable("GITHUB_REPOSITORY_OWNER");
-                string repoName = Environment.GetEnvironmentVariable("GITHUB_REPOSITORY")?.Split('/').Last();
-
-                if (string.IsNullOrEmpty(githubToken))
-                {
-                    Console.WriteLine("Error: GITHUB_TOKEN environment variable is not set");
-                    return;
-                }
-
-                if (string.IsNullOrEmpty(openAIKey))
-                {
-                    Console.WriteLine("Error: OPENAI_API_KEY environment variable is not set");
-                    return;
-                }
-
-                if (string.IsNullOrEmpty(repoOwner) || string.IsNullOrEmpty(repoName))
-                {
-                    Console.WriteLine("Error: GitHub repository information is not available");
-                    return;
-                }
-
-                // Create and run the Universal Builder
-                var builder = new UniversalBuilder(
-                    intent,
-                    valueThreshold,
-                    githubToken,
-                    openAIKey,
-                    repoOwner,
-                    repoName);
-
-                await builder.RunAsync();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error: {ex.Message}");
-                Console.WriteLine(ex.StackTrace);
-                Environment.Exit(1);
-            }
-        }
     }
 } 
