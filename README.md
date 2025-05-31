@@ -21,6 +21,7 @@ The system runs entirely on GitHub Actions and uses GitHub itself as its databas
 - **GitHub-Native Infrastructure**: Uses GitHub as its database
 - **Self-Evolution**: Creates PRs to improve itself (Strange Loop pattern)
 - **24/7 Autonomous Operation**: Runs on a scheduled basis
+- **Auto-Run Tools**: Rapid development cycle tools for local and Docker environments
 
 ## Architecture
 
@@ -30,6 +31,7 @@ The system consists of:
 - **GitHubMemory.cs**: GitHub-based persistence layer
 - **GitHub Actions Workflow**: Triggers the system
 - **Prompty Templates**: Drives the system's behavior
+- **Auto-Run Scripts**: Accelerates development cycles
 
 ## Getting Started
 
@@ -46,6 +48,14 @@ The system consists of:
    - `GITHUB_TOKEN`: Your GitHub Personal Access Token
    - `OPENAI_API_KEY`: Your OpenAI API key
    - `DEFAULT_VALUE_THRESHOLD`: Default value threshold (e.g., "50")
+3. For local development:
+   ```bash
+   # Set up environment
+   make setup
+   
+   # Run with your intent
+   make run ARGS="Build a calculator app 50"
+   ```
 
 ### Usage
 
@@ -54,6 +64,45 @@ You can trigger the Universal Builder in three ways:
 1. **Manual Trigger**: Go to Actions tab → Universal Builder → Run workflow → Enter your intent
 2. **Issue Creation**: Create a new issue with your intent as the title
 3. **Scheduled Run**: The system runs automatically every 5 minutes to check for work or self-evolve
+4. **Local Development**:
+   ```bash
+   ./auto-run.sh dev "Build a web app" 50
+   ```
+5. **Docker Development**:
+   ```bash
+   make docker-dev
+   ```
+
+## Development Tools
+
+The project includes several tools to accelerate development:
+
+- **auto-run.sh**: Script for rapid development cycles
+  ```bash
+  ./auto-run.sh [dev|watch|test|workflow] [intent] [value_threshold]
+  ```
+- **Docker environment**: Containerized development
+  ```bash
+  # Start development container
+  make docker-dev
+  
+  # Watch for file changes
+  make docker-watch
+  
+  # Simulate GitHub Actions workflow
+  make docker-workflow
+  ```
+- **Makefile**: Common development commands
+  ```bash
+  # See all available commands
+  make help
+  ```
+- **CI/CD script**: For continuous integration pipelines
+  ```bash
+  ./ci-cd-run.sh "Build intent" 50 github-actions
+  ```
+
+For more details, see [QUICKSTART.md](QUICKSTART.md)
 
 ## How It Works
 

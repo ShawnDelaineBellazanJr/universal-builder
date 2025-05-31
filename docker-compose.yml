@@ -1,0 +1,46 @@
+version: '3'
+
+services:
+  autonomousai:
+    build: .
+    volumes:
+      - .:/app
+      - ~/.gitconfig:/root/.gitconfig
+      - ~/.ssh:/root/.ssh
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - DEFAULT_VALUE_THRESHOLD=${DEFAULT_VALUE_THRESHOLD:-50}
+    ports:
+      - "8080:8080"  # For future web interface
+    command: dev     # Default to dev mode, can be overridden
+
+  # Service for continuous monitoring and auto-rebuilding
+  watcher:
+    build: .
+    volumes:
+      - .:/app
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - DEFAULT_VALUE_THRESHOLD=${DEFAULT_VALUE_THRESHOLD:-50}
+    command: watch  # Watch mode
+
+  # Service for simulating GitHub Actions workflow
+  workflow:
+    build: .
+    volumes:
+      - .:/app
+      - ~/.gitconfig:/root/.gitconfig
+      - ~/.ssh:/root/.ssh
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - DEFAULT_VALUE_THRESHOLD=${DEFAULT_VALUE_THRESHOLD:-50}
+    command: workflow  # Workflow simulation mode 
