@@ -20,6 +20,7 @@ The SK Frequency Router is a component that intelligently routes tasks to the ap
 | **Prompt quality** | N/A | Enhanced, detailed prompts |
 | **Benchmarking** | Not available | Comprehensive comparison |
 | **Visualization** | Not available | Data-driven insights |
+| **Dashboard** | Not available | Interactive HTML reports |
 
 ## Implementation Details
 
@@ -151,6 +152,35 @@ The visualizations provide:
 
 All visualizations are saved to a timestamped directory for easy reference and comparison over time.
 
+## Interactive HTML Dashboard
+
+The system includes an advanced interactive HTML dashboard for comprehensive visualization and analysis:
+
+```bash
+python generate-dashboard.py [benchmark_results.json] [output_file.html]
+```
+
+The dashboard includes:
+
+1. **Key Metrics Overview**:
+   - Total routing decisions
+   - Average economic value
+   - Average processing time
+   - Success rate
+
+2. **Interactive Charts**:
+   - Frequency distribution
+   - Economic value by frequency
+   - Processing time by frequency
+   - Success rate by frequency
+
+3. **Detailed Analysis**:
+   - Frequency distribution with percentage bars
+   - Sample routing decisions table
+   - Raw decision data
+
+The dashboard is automatically generated when running the benchmark visualization script and provides a comprehensive view of the router's performance in an easy-to-share HTML format.
+
 ## Benefits
 
 - **More accurate routing**: Tasks are routed to the most appropriate frequency based on their actual meaning rather than keywords
@@ -161,6 +191,7 @@ All visualizations are saved to a timestamped directory for easy reference and c
 - **Performance insights**: Tracks routing decisions to enable data-driven improvements
 - **Benchmarking capabilities**: Provides comparative analysis against the previous approach
 - **Visual analytics**: Generates charts and graphs for intuitive performance analysis
+- **Interactive reporting**: Creates shareable HTML dashboards for comprehensive analysis
 
 ## Testing and Validation
 
@@ -171,6 +202,7 @@ The system includes a comprehensive test suite:
 3. **Performance report**: Generates a detailed report of router performance
 4. **Benchmark comparison**: Compares against the keyword-based approach
 5. **Data visualization**: Provides visual insights into performance metrics
+6. **Interactive dashboard**: Creates a comprehensive HTML report of all metrics
 
 Run the tests using:
 
@@ -190,6 +222,12 @@ Run the benchmark with visualization:
 ./run-benchmark-and-visualize.sh [number_of_test_cases]
 ```
 
+Generate a dashboard directly:
+
+```bash
+python generate-dashboard.py [benchmark_results.json] [output_file.html]
+```
+
 ## Future Improvements
 
 1. **Adaptive learning**: Train the router on past decisions to improve over time
@@ -201,4 +239,6 @@ Run the benchmark with visualization:
 7. **Visualization dashboard**: Create a real-time dashboard of router performance
 8. **Pre-trained models**: Fine-tune models specifically for frequency routing
 9. **A/B testing framework**: Systematically compare different routing strategies
-10. **Integration with monitoring systems**: Connect with broader system metrics 
+10. **Integration with monitoring systems**: Connect with broader system metrics
+11. **Real-time analytics**: Live monitoring of routing decisions and performance
+12. **Predictive modeling**: Forecast future routing patterns and resource needs 
