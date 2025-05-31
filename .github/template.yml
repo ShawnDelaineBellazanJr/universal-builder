@@ -1,0 +1,39 @@
+name: "Universal Autonomous Builder"
+description: "Self-evolving template that can autonomously build and evolve any project type"
+labels: ["autonomous", "ai-agent", "universal-builder", "strange-loop"]
+
+# Self-referencing capability
+self_reference: true
+evolution_enabled: true
+meta_evolution_enabled: true
+
+# Supported project types (extensible)
+project_types:
+  - ios-app
+  - web-service
+  - data-pipeline
+  - autonomous-agent
+  - template-evolution  # Can improve itself
+  - sk-enhancement     # Can improve Semantic Kernel
+
+# Template capabilities
+capabilities:
+  autonomous_building: true
+  self_improvement: true
+  framework_contribution: true
+  pattern_mining: true
+  quality_assurance: true
+  
+# Customization options
+customization:
+  goal_input: ["github-issues", "workflow-dispatch", "api-webhook"]
+  build_target: "configurable"
+  evolution_mode: ["active", "passive", "manual"]
+  recursion_depth: 5
+  
+# Evolution settings
+evolution:
+  frequency: "per-build"
+  confidence_threshold: 0.8
+  auto_pr: true
+  rollback_enabled: true 

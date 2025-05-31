@@ -1,0 +1,38 @@
+{
+  "Number": 465,
+  "Title": "Universal Builder: Build a simple calculator app",
+  "Body": "Building with intent: Build a simple calculator app\nValue: 50",
+  "Labels": [
+    "universal-builder",
+    "in-progress"
+  ],
+  "State": "closed",
+  "CreatedAt": "2025-05-31T03:15:18.5245375Z",
+  "Comments": [
+    {
+      "Id": "\u0022\\u0022\\\\u00225403\\\\u0022\\u0022\u0022",
+      "Body": "\u0022\\u0022\\\\u0022\\\\\\\\u0022## Plan\\\\\\\\\\\\\\\\n\\\\\\\\\\\\\\\\nDebug mock response for unknown\\\\\\\\u0022\\\\u0022\\u0022\u0022",
+      "CreatedAt": "\u0022\\u0022\\\\u0022\\\\\\\\u00222025-05-31T03:15:18.5451243Z\\\\\\\\u0022\\\\u0022\\u0022\u0022"
+    },
+    {
+      "Id": "\u0022\\u00221622\\u0022\u0022",
+      "Body": "\u0022\\u0022\\\\u0022## Implementation\\\\\\\\n\\\\\\\\nDebug mock implementation\\\\\\\\n\\\\\\\\u0060\\\\\\\\u0060\\\\\\\\u0060csharp\\\\\\\\n// Sample implementation\\\\\\\\nConsole.WriteLine(\\\\\\\\u0022Hello World\\\\\\\\u0022);\\\\\\\\n\\\\\\\\u0060\\\\\\\\u0060\\\\\\\\u0060\\\\u0022\\u0022\u0022",
+      "CreatedAt": "\u0022\\u0022\\\\u00222025-05-31T03:15:18.5476295Z\\\\u0022\\u0022\u0022"
+    },
+    {
+      "Id": "\u00223692\u0022",
+      "Body": "\u0022\\u0022## Check\\\\n\\\\nPASS: All checks completed successfully.\\u0022\u0022",
+      "CreatedAt": "\u0022\\u00222025-05-31T03:15:18.5515727Z\\u0022\u0022"
+    },
+    {
+      "Id": "8652",
+      "Body": "\u0022## Reflection\\n\\nDebug mock reflection: The implementation was successful. No issues were found.\u0022",
+      "CreatedAt": "\u00222025-05-31T03:15:18.5535963Z\u0022"
+    },
+    {
+      "Id": 2041,
+      "Body": "## Next Steps\n\nDebug mock orchestration: Continue with the current approach.",
+      "CreatedAt": "2025-05-31T03:15:18.5544201Z"
+    }
+  ]
+}

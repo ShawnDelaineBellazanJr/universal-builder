@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace CognitiveArchitectureDemo
+namespace SimpleCognitiveTest
 {
     public enum CognitiveFrequency
     {

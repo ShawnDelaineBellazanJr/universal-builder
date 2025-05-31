@@ -1,37 +1,49 @@
-# Universal Builder
+# Universal Autonomous Builder
 
-A self-evolving AI system running entirely on GitHub Actions that can build anything from a simple description.
+A self-evolving AI system running on GitHub that can autonomously build any project from a simple description, while continuously improving itself and its foundation (Semantic Kernel).
 
 ## Overview
 
-Universal Builder implements the PMCRO pattern (Planner, Maker, Checker, Reflector, Orchestrator) to create a system that:
+Universal Autonomous Builder implements a sophisticated Strange Loop pattern with multiple components:
 
-1. **Plans** a solution based on your intent
-2. **Makes** the implementation
-3. **Checks** for issues
-4. **Reflects** on the process
-5. **Orchestrates** everything and determines next steps
+1. **GoalProcessor**: Analyzes and structures user intents
+2. **StrategicPlanner**: Creates detailed build plans
+3. **ChainOfThoughtReasoning**: Performs step-by-step reasoning
+4. **StrangeLoopEngine**: Enables recursive self-improvement
+5. **SK Evolution Engine**: Autonomously evolves system using Semantic Kernel
 
-The system runs entirely on GitHub Actions and uses GitHub itself as its database - storing templates in Gists, work tracking in Issues, history in Releases, and evolving through Pull Requests.
+The system follows a PMCRO pattern (Planner, Maker, Checker, Reflector, Orchestrator) and implements a Strange Loop, where:
+
+1. **Template builds projects** (Level 1)
+2. **Template learns from building projects** (Level 2) 
+3. **Template improves itself using learnings** (Level 3)
+4. **Template improves Semantic Kernel** (Level 4)
+5. **Improved SK enables better template capabilities** (Level 5)
+6. **RECURSION - Enhanced template builds better projects** (Level 6)
 
 ## Key Features
 
 - **Economic Consciousness**: Evaluates task value against thresholds
-- **Template-Driven Development**: Loads templates from GitHub Gists
-- **GitHub-Native Infrastructure**: Uses GitHub as its database
+- **Template-Driven Development**: Uses advanced Prompty templates
+- **GitHub Integration**: Uses GitHub as its database and deployment platform
+- **Chain-of-Thought Reasoning**: Employs structured reasoning for complex problems
 - **Self-Evolution**: Creates PRs to improve itself (Strange Loop pattern)
-- **24/7 Autonomous Operation**: Runs on a scheduled basis
-- **Auto-Run Tools**: Rapid development cycle tools for local and Docker environments
+- **Meta-Evolution**: Contributes improvements to Semantic Kernel
+- **Project Type Templates**: Specialized for various project types (iOS, web, etc.)
+- **Multi-Frequency Cognition**: Processes at five different time scales (0s, 30s, 15m, 2h, 24h)
+- **SK Evolution Engine**: Autonomous system for evolving codebase using Semantic Kernel
 
 ## Architecture
 
 The system consists of:
 
-- **UniversalBuilder.cs**: Main implementation with PMCRO pattern
-- **GitHubMemory.cs**: GitHub-based persistence layer
-- **GitHub Actions Workflow**: Triggers the system
-- **Prompty Templates**: Drives the system's behavior
-- **Auto-Run Scripts**: Accelerates development cycles
+- **Goal Processing Layer**: Analyzes and structures user goals
+- **Reasoning Layer**: Performs chain-of-thought reasoning about goals
+- **Planning Layer**: Creates detailed project plans
+- **Evolution Layer**: Enables self-improvement and meta-evolution
+- **GitHub Integration Layer**: Interfaces with GitHub APIs
+- **Cognitive Layer**: Implements multi-frequency cognitive processes
+- **SK Evolution Layer**: Analyzes and evolves codebase using SK
 
 ## Getting Started
 
@@ -40,124 +52,142 @@ The system consists of:
 - GitHub repository
 - GitHub Personal Access Token with repo, workflow, and gist permissions
 - OpenAI API key
+- .NET 9.0
+
+### Setup
+
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/ShawnDelaineBellazanJr/AutonomousAI.git
+   cd AutonomousAI
+   ```
+
+2. Create a `.env.local` file with your configuration:
+   ```
+   GITHUB_TOKEN=your_github_token
+   OPENAI_API_KEY=your_openai_key
+   DEBUG_MODE=true  # For local development
+   ```
+
+3. Build the project:
+   ```bash
+   dotnet build
+   ```
+
+4. Run the system:
+   ```bash
+   # Basic usage
+   dotnet run universal-build --goal "Build a calculator app"
+   
+   # Specify project type
+   dotnet run universal-build --goal "Build an iOS app for tracking workouts" --project-type ios-app
+   
+   # Disable recursion
+   dotnet run universal-build --goal "Build a web service" --no-recursion
+   ```
 
 ### Debug Mode
 
 For local development and testing without GitHub API calls:
 
 1. Set `DEBUG_MODE=true` in your `.env` or `.env.local` file
-2. Files are stored locally in:
-   - `debug_issues/` - For issue tracking
-   - `debug_prs/` - For pull requests
-   - `debug_releases/` - For release history
-3. Create templates in the `templates/` folder to override default templates
+2. Create a `templates` directory with project templates
+3. Run with debug mode enabled
 
-### Setup
+## Available Commands
 
-1. Fork this repository
-2. Add the following secrets to your repository:
-   - `GITHUB_TOKEN`: Your GitHub Personal Access Token
-   - `OPENAI_API_KEY`: Your OpenAI API key
-   - `DEFAULT_VALUE_THRESHOLD`: Default value threshold (e.g., "50")
-3. For local development:
-   ```bash
-   # Set up environment
-   make setup
-   
-   # Run with your intent
-   make run ARGS="Build a calculator app 50"
-   ```
-
-### Usage
-
-You can trigger the Universal Builder in three ways:
-
-1. **Manual Trigger**: Go to Actions tab → Universal Builder → Run workflow → Enter your intent
-2. **Issue Creation**: Create a new issue with your intent as the title
-3. **Scheduled Run**: The system runs automatically every 5 minutes to check for work or self-evolve
-4. **Local Development**:
-   ```bash
-   ./auto-run.sh dev "Build a web app" 50
-   ```
-5. **Docker Development**:
-   ```bash
-   make docker-dev
-   ```
-
-## Development Tools
-
-The project includes several tools to accelerate development:
-
-- **auto-run.sh**: Script for rapid development cycles
+- **universal-build**: Builds a project based on a goal
   ```bash
-  ./auto-run.sh [dev|watch|test|workflow] [intent] [value_threshold]
+  dotnet run universal-build --goal "Your goal here" --project-type [optional] --recursion/--no-recursion
   ```
-- **Docker environment**: Containerized development
+
+- **check-evolution**: Checks for evolution opportunities
   ```bash
-  # Start development container
-  make docker-dev
+  dotnet run check-evolution --threshold 0.8 --auto-pr true
+  ```
+
+- **meta-evolution**: Runs meta-evolution to improve Semantic Kernel
+  ```bash
+  dotnet run meta-evolution --target semantic-kernel --confidence-threshold 0.9
+  ```
+
+- **generate-report**: Generates a report
+  ```bash
+  dotnet run generate-report --include-metrics --include-learnings --include-evolution
+  ```
+
+- **sk-evolution**: Runs the SK Evolution Engine
+  ```bash
+  cd sk-evolution
+  ./run-sk-evolution.sh
   
-  # Watch for file changes
-  make docker-watch
-  
-  # Simulate GitHub Actions workflow
-  make docker-workflow
-  ```
-- **Makefile**: Common development commands
-  ```bash
-  # See all available commands
-  make help
-  ```
-- **CI/CD script**: For continuous integration pipelines
-  ```bash
-  ./ci-cd-run.sh "Build intent" 50 github-actions
+  # Or run specific commands
+  ./run-sk-evolution.sh analyze-dotnet
+  ./run-sk-evolution.sh analyze-sk
+  ./run-sk-evolution.sh propose-improvements
+  ./run-sk-evolution.sh implement-improvements
   ```
 
-For more details, see [QUICKSTART.md](QUICKSTART.md)
+## Multi-Frequency Cognitive Architecture
 
-## How It Works
+The system implements a multi-frequency cognitive architecture with five frequencies:
 
-### The PMCRO Cycle
+- **Immediate (0s)**: Fast, reactive processing for urgent tasks
+- **Continuous (30s)**: Regular background processing for continuous tasks
+- **Analysis (15m)**: Deeper analytical processing for complex problems
+- **Optimization (2h)**: Optimization processes for improving efficiency
+- **Evolution (24h)**: Long-term evolution processes for system improvement
 
-For each build request, the system:
+Each frequency has its own economic threshold (95, 50, 70, 85, 90) to determine when processing at that level is justified.
 
-1. **Planner**: Creates a detailed plan based on your intent
-2. **Maker**: Implements the plan with concrete steps and code
-3. **Checker**: Verifies the implementation against your intent
-4. **Reflector**: Analyzes what worked, what didn't, and why
-5. **Orchestrator**: Decides on next steps and improvements
+## SK Evolution Engine
 
-### Economic Consciousness
+The SK Evolution Engine is an autonomous system that:
 
-Before starting work, the system evaluates the economic value of your request against a threshold. This prevents wasting resources on low-value tasks.
+1. Analyzes the .NET SDK and Semantic Kernel repositories
+2. Learns best practices and patterns from these codebases
+3. Proposes improvements to our multi-frequency cognitive architecture
+4. Implements these improvements and creates pull requests
+5. Continuously evolves the codebase
 
-### Self-Evolution
+It runs on a daily schedule and can be triggered manually through GitHub Actions. See the [SK Evolution Engine README](sk-evolution/README.md) for more details.
 
-The system continuously improves itself by:
+## Project Templates
 
-1. Analyzing its own code and performance
-2. Generating improvements
-3. Creating pull requests with these improvements
-4. Learning from its history to make better decisions
+The system supports various project types with specialized templates:
 
-## Template System
+- **ios-app**: iOS mobile applications with SwiftUI
+- **web-service**: Web services, APIs, and backends
+- **web-app**: Web applications with frontend components
+- **data-pipeline**: Data processing or ETL pipelines
+- **ml-model**: Machine learning models or AI systems
+- **autonomous-agent**: AI agents or autonomous systems
+- **template-evolution**: Improvements to the builder template itself
+- **sk-enhancement**: Improvements to the Semantic Kernel framework
 
-The system uses Prompty templates stored in GitHub Gists. You can customize these templates to change how the system:
+## The Strange Loop Pattern
 
-- Plans solutions
-- Implements code
-- Checks for issues
-- Reflects on its work
-- Makes economic decisions
+The system implements a Strange Loop pattern, where:
 
-## Extending the System
+1. The system builds a project
+2. It learns from this experience
+3. It improves itself using these learnings
+4. It improves Semantic Kernel
+5. The improved SK enables better capabilities
+6. This triggers recursion, repeating the cycle
 
-You can extend the Universal Builder by:
+This creates a system that can continuously improve itself and its foundation.
 
-1. Creating custom Prompty templates
-2. Modifying the PMCRO cycle
-3. Adding new persistence mechanisms
-4. Integrating with other systems via GitHub webhooks
+## Chain-of-Thought Reasoning
+
+The system employs structured chain-of-thought reasoning:
+
+1. **Goal Decomposition**: Breaks down complex goals
+2. **Context Analysis**: Analyzes project context
+3. **Strategy Selection**: Generates and selects strategies
+4. **Execution Planning**: Creates detailed step-by-step plans
+5. **Risk Assessment**: Identifies and mitigates risks
+6. **Recursion Opportunity Identification**: Finds improvement opportunities
 
 ## License
 
@@ -167,5 +197,5 @@ MIT License
 
 Built using:
 - Microsoft Semantic Kernel 1.54.0
-- Octokit
-- GitHub Actions 
+- Microsoft.SemanticKernel.Prompty
+- Octokit 

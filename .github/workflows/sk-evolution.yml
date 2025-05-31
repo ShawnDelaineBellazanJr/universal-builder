@@ -1,0 +1,88 @@
+name: 🧬 SK Evolution Engine
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run daily at midnight
+  
+  workflow_dispatch:
+    inputs:
+      command:
+        description: 'SK Evolution command to run'
+        type: choice
+        options: [evolve, analyze-dotnet, analyze-sk, propose-improvements, implement-improvements]
+        default: evolve
+      
+      goal:
+        description: 'Evolution goal (optional)'
+        required: false
+
+env:
+  DOTNET_VERSION: '7.0.x'
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  sk-evolution:
+    name: 🧬 SK Evolution Process
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: 🔧 Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          
+      - name: 🔧 Setup SK Evolution Engine
+        run: |
+          echo "Setting up SK Evolution Engine..."
+          cd sk-evolution/SkEvolutionEngine
+          dotnet build
+          
+          # Create .env file
+          cat > .env << EOT
+          # OpenAI Configuration
+          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+          
+          # GitHub Configuration
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          
+          # Logging
+          LOG_LEVEL=Information
+          EOT
+      
+      - name: 🧬 Run SK Evolution
+        run: |
+          cd sk-evolution
+          
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            # Run with specified command
+            ./run-sk-evolution.sh ${{ github.event.inputs.command }} ${{ github.event.inputs.goal }}
+          else
+            # Run full evolution cycle
+            ./run-sk-evolution.sh
+          fi
+      
+      - name: 📊 Publish Evolution Report
+        if: success()
+        run: |
+          echo "## SK Evolution Report" > evolution-report.md
+          echo "Evolution cycle completed at $(date)" >> evolution-report.md
+          
+          if [ -f "sk-evolution/evolution-results.json" ]; then
+            echo "" >> evolution-report.md
+            echo "### Evolution Results" >> evolution-report.md
+            echo '```json' >> evolution-report.md
+            cat sk-evolution/evolution-results.json >> evolution-report.md
+            echo '```' >> evolution-report.md
+          fi
+          
+          # Create comment on PR if this was triggered by PR
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            gh pr comment ${{ github.event.pull_request.number }} -F evolution-report.md
+          fi
+          
+          # Create issue with evolution report for scheduled runs
+          if [ "${{ github.event_name }}" == "schedule" ]; then
+            gh issue create --title "SK Evolution Report $(date +%Y-%m-%d)" --body-file evolution-report.md --label "evolution"
+          fi 

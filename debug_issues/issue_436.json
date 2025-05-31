@@ -1,0 +1,12 @@
+{
+  "Number": 436,
+  "Title": "Value Refusal: Build a simple calculator app",
+  "Body": "Intent: Build a simple calculator app\nValue: 0\nThreshold: 50\nReason: Task value (0) is below threshold (50). Refusing to proceed.",
+  "Labels": [
+    "universal-builder",
+    "value-refusal"
+  ],
+  "State": "open",
+  "CreatedAt": "2025-05-31T03:10:44.9948704Z",
+  "Comments": []
+}

@@ -1,0 +1,72 @@
+{
+  "name": "Universal Autonomous Builder",
+  "version": "1.0.0",
+  "servers": {
+    "github": {
+      "command": "github-mcp-server",
+      "capabilities": [
+        "repository_management",
+        "pull_request_creation",
+        "code_analysis",
+        "issue_tracking",
+        "template_evolution"
+      ],
+      "config": {
+        "auto_fork": true,
+        "auto_pr": true,
+        "evolution_branch": "template-evolution"
+      }
+    },
+    "filesystem": {
+      "command": "filesystem-mcp-server",
+      "capabilities": [
+        "file_operations",
+        "project_structure",
+        "template_management"
+      ]
+    },
+    "semantic_kernel": {
+      "command": "sk-mcp-server",
+      "capabilities": [
+        "preview_monitoring",
+        "package_testing",
+        "contribution_management"
+      ],
+      "config": {
+        "monitor_repos": ["microsoft/semantic-kernel"],
+        "preview_packages": "auto-discover",
+        "contribution_threshold": 0.9
+      }
+    },
+    "project_specific": {
+      "ios": {
+        "command": "ios-mcp-server",
+        "enabled_when": "project_type == 'ios-app'",
+        "capabilities": ["xcode_integration", "app_store_connect"]
+      },
+      "web": {
+        "command": "web-mcp-server", 
+        "enabled_when": "project_type == 'web-service'",
+        "capabilities": ["docker_deployment", "api_testing"]
+      },
+      "data": {
+        "command": "data-mcp-server",
+        "enabled_when": "project_type == 'data-pipeline'",
+        "capabilities": ["pipeline_orchestration", "data_validation"]
+      }
+    }
+  },
+  "orchestration": {
+    "pattern": "maker_planner_checker",
+    "recursion": {
+      "enabled": true,
+      "max_depth": 5,
+      "improvement_threshold": 0.1
+    },
+    "evolution": {
+      "template_evolution": "continuous",
+      "sk_evolution": "weekly",
+      "confidence_threshold": 0.8
+    }
+  }
+} 

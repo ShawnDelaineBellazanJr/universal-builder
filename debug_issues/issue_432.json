@@ -1,0 +1,12 @@
+{
+  "Number": 432,
+  "Title": "Value Refusal: Self-evolve and improve Universal Builder capabilities",
+  "Body": "Intent: Self-evolve and improve Universal Builder capabilities\nValue: 0\nThreshold: 50\nReason: Task value (0) is below threshold (50). Refusing to proceed.",
+  "Labels": [
+    "universal-builder",
+    "value-refusal"
+  ],
+  "State": "open",
+  "CreatedAt": "2025-05-31T03:08:49.2432089Z",
+  "Comments": []
+}

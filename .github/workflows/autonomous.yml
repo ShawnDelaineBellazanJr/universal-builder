@@ -1,0 +1,121 @@
+name: Universal Autonomous Builder
+on:
+  issues:
+    types: [opened, labeled]
+  workflow_dispatch:
+    inputs:
+      goal:
+        description: 'What should I build?'
+        required: true
+      project_type:
+        description: 'Project type (auto-detect if empty)'
+        required: false
+      recursion_enabled:
+        description: 'Enable recursive improvement'
+        type: boolean
+        default: true
+  schedule:
+    - cron: '0 */6 * * *'  # Meta-evolution cycle
+  repository_dispatch:
+    types: [evolution-trigger, sk-preview-detected]
+
+jobs:
+  autonomous_build:
+    runs-on: ubuntu-latest
+    environment: autonomous-builder
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      
+    steps:
+    - name: Checkout Template
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET 9
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+        
+    - name: Initialize Semantic Kernel
+      run: |
+        # Install SK packages including previews
+        dotnet add package Microsoft.SemanticKernel --prerelease
+        dotnet add package Microsoft.SemanticKernel.Agents --prerelease
+        dotnet add package Microsoft.SemanticKernel.Process.LocalRuntime --prerelease
+        dotnet add package Microsoft.SemanticKernel.Prompty --prerelease
+        
+    - name: Set environment variables
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+        AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+      run: |
+        echo "GITHUB_TOKEN=$GITHUB_TOKEN" >> $GITHUB_ENV
+        echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> $GITHUB_ENV
+        echo "AZURE_OPENAI_API_KEY=$AZURE_OPENAI_API_KEY" >> $GITHUB_ENV
+        echo "AZURE_OPENAI_ENDPOINT=$AZURE_OPENAI_ENDPOINT" >> $GITHUB_ENV
+        
+    - name: Configure MCP Servers
+      run: |
+        # Setup GitHub MCP
+        mkdir -p mcp-servers
+        echo "Configuring MCP servers for Universal Autonomous Builder"
+        
+    - name: Determine build goal
+      id: determine_goal
+      run: |
+        if [ "${{ github.event_name }}" == "issues" ]; then
+          GOAL=$(echo "${{ github.event.issue.title }}" | tr -d '\n')
+          echo "GOAL=$GOAL" >> $GITHUB_ENV
+        elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          GOAL="${{ github.event.inputs.goal }}"
+          echo "GOAL=$GOAL" >> $GITHUB_ENV
+        elif [ "${{ github.event_name }}" == "schedule" ]; then
+          GOAL="Meta-evolution: Improve Semantic Kernel integration"
+          echo "GOAL=$GOAL" >> $GITHUB_ENV
+        elif [ "${{ github.event_name }}" == "repository_dispatch" ]; then
+          GOAL="${{ github.event.client_payload.goal }}"
+          echo "GOAL=$GOAL" >> $GITHUB_ENV
+        fi
+        
+    - name: Execute Universal Builder Process
+      run: |
+        # Main autonomous building process
+        dotnet run -- universal-build \
+          --goal="${{ env.GOAL }}" \
+          --project-type="${{ github.event.inputs.project_type }}" \
+          --recursion=${{ github.event.inputs.recursion_enabled || 'true' }}
+          
+    - name: Template Evolution Check
+      run: |
+        # Check if template should evolve
+        dotnet run -- check-evolution \
+          --threshold=0.8 \
+          --auto-pr=true
+          
+    - name: Meta-Evolution (SK Improvement)
+      if: github.event_name == 'schedule'
+      run: |
+        # Weekly SK improvement cycle
+        dotnet run -- meta-evolution \
+          --target=semantic-kernel \
+          --confidence-threshold=0.9
+          
+    - name: Report Results
+      run: |
+        # Generate comprehensive report
+        dotnet run -- generate-report \
+          --include-metrics=true \
+          --include-learnings=true \
+          --include-evolution=true
+        
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-artifacts
+        path: |
+          build/
+          reports/
+          evolution-plan.md 

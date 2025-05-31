@@ -1,0 +1,223 @@
+name: 🤖 Autonomous Evolution - SK-MCP Powered
+on:
+  # Self-modifying schedule - Universal Builder changes this autonomously
+  schedule:
+    - cron: '*/15 * * * *'  # Start with 15-minute cycles, will adapt
+  
+  # Trigger on repository changes for reactive evolution
+  push:
+    branches: [main]
+    paths:
+      - 'AutonomousAI/**'
+      - '.github/workflows/**'
+  
+  # Issues trigger evolution goals
+  issues:
+    types: [opened, labeled]
+  
+  # Manual evolution trigger
+  workflow_dispatch:
+    inputs:
+      evolution_goal:
+        description: 'Specific evolution goal'
+        required: false
+        default: 'continuous self-improvement'
+      frequency:
+        description: 'Evolution frequency (cron format)'
+        required: false
+        default: '*/30 * * * *'
+
+env:
+  # Multi-provider AI support
+  GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
+  AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  # Pre-evolution health check using GitHub MCP
+  health-check:
+    name: 🩺 Repository Health Check
+    runs-on: ubuntu-latest
+    outputs:
+      health-status: ${{ steps.health.outputs.status }}
+      should-evolve: ${{ steps.health.outputs.should_evolve }}
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for evolution analysis
+      
+      - name: 🔧 Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      
+      - name: 📦 Install Dependencies
+        run: |
+          cd AutonomousAI
+          dotnet restore
+      
+      - name: 🩺 Execute Health Check
+        id: health
+        run: |
+          cd AutonomousAI
+          echo "Executing SK-MCP health check..."
+          health_result=$(dotnet run -- monitor)
+          echo "status=$health_result" >> $GITHUB_OUTPUT
+          
+          # AI determines if evolution is needed
+          if [[ "$health_result" == *"evolution needed"* ]] || [[ "$health_result" == *"improvements required"* ]]; then
+            echo "should_evolve=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_evolve=false" >> $GITHUB_OUTPUT
+          fi
+  
+  # Main autonomous evolution cycle
+  autonomous-evolution:
+    name: 🧬 Autonomous Evolution Cycle
+    runs-on: ubuntu-latest
+    needs: health-check
+    if: needs.health-check.outputs.should-evolve == 'true' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+      
+      - name: 🔧 Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      
+      - name: 🐳 Setup Docker (for GitHub MCP server)
+        uses: docker/setup-buildx-action@v3
+      
+      - name: 📦 Install Dependencies
+        run: |
+          cd AutonomousAI
+          dotnet restore
+          dotnet build
+      
+      - name: 🔍 Analyze Evolution Goal
+        id: goal
+        run: |
+          # Extract goal from issue labels, PR title, or use default
+          goal="${{ github.event.inputs.evolution_goal || 'continuous self-improvement' }}"
+          
+          if [[ "${{ github.event_name }}" == "issues" ]]; then
+            # Use issue title as evolution goal
+            goal="${{ github.event.issue.title }}"
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            # Extract goal from commit message
+            goal="$(git log -1 --pretty=%B | head -1)"
+          fi
+          
+          echo "evolution_goal=$goal" >> $GITHUB_OUTPUT
+          echo "🎯 Evolution Goal: $goal"
+      
+      - name: 🚀 Execute Evolution Cycle
+        id: evolve
+        run: |
+          cd AutonomousAI
+          echo "🤖 Starting SK-MCP powered evolution..."
+          echo "Goal: ${{ steps.goal.outputs.evolution_goal }}"
+          
+          # Execute the autonomous evolution using SK-native GitHub MCP
+          evolution_result=$(dotnet run -- evolve "${{ steps.goal.outputs.evolution_goal }}")
+          
+          echo "result=$evolution_result" >> $GITHUB_OUTPUT
+          echo "✅ Evolution completed: $evolution_result"
+      
+      - name: 📊 Evolution Analytics
+        run: |
+          echo "📊 Evolution Analytics:"
+          echo "- Goal: ${{ steps.goal.outputs.evolution_goal }}"
+          echo "- Result: ${{ steps.evolve.outputs.result }}"
+          echo "- Trigger: ${{ github.event_name }}"
+          echo "- Repository Health: ${{ needs.health-check.outputs.health-status }}"
+          echo "- Timestamp: $(date -u)"
+  
+  # Self-modification of workflow schedules
+  schedule-adaptation:
+    name: ⏰ Adaptive Schedule Management
+    runs-on: ubuntu-latest
+    needs: [health-check, autonomous-evolution]
+    if: always() && needs.autonomous-evolution.result != 'failure'
+    
+    steps:
+      - name: 📥 Checkout Repository  
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: 🔧 Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      
+      - name: ⏰ Analyze and Update Schedule
+        run: |
+          cd AutonomousAI
+          echo "🕐 Analyzing optimal evolution frequency..."
+          
+          # Let the Universal Builder analyze and update its own schedule
+          dotnet run -- analyze-schedule "${{ needs.autonomous-evolution.outputs.result }}"
+          
+          # The SK-MCP implementation will autonomously update this workflow file
+          echo "✅ Schedule analysis completed - Universal Builder may have updated workflow"
+      
+      - name: 📝 Log Schedule Changes
+        run: |
+          echo "📅 Schedule Adaptation Summary:"
+          echo "- Previous trigger: ${{ github.event_name }}"
+          echo "- Evolution result: ${{ needs.autonomous-evolution.outputs.result }}"
+          echo "- Health status: ${{ needs.health-check.outputs.health-status }}"
+          echo "- Next adaptation will be determined by Universal Builder's AI analysis"
+
+  # Experiment branch cleanup
+  cleanup-experiments:
+    name: 🧹 Experiment Branch Cleanup
+    runs-on: ubuntu-latest
+    needs: autonomous-evolution
+    if: always()
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+      
+      - name: 🔧 Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      
+      - name: 🧹 Clean Old Experiment Branches
+        run: |
+          cd AutonomousAI
+          echo "🧹 Cleaning up old experiment branches..."
+          
+          # Use SK-MCP to intelligently clean up merged/stale experiment branches
+          dotnet run -- cleanup-experiments
+          
+          echo "✅ Experiment cleanup completed"
+
+# 🤖 AUTONOMOUS METADATA
+# This workflow is self-modifying - the Universal Builder SK-MCP system can update:
+# - Schedule frequency based on AI analysis
+# - Evolution goals based on repository state  
+# - Trigger conditions based on learning outcomes
+# - Job configurations based on performance metrics
+#
+# Last modified: [TIMESTAMP_PLACEHOLDER]
+# Modification reason: [REASON_PLACEHOLDER]  
+# Next scheduled evolution: [NEXT_SCHEDULE_PLACEHOLDER]
+#
+# 🧬 Evolution History:
+# - v1.0: Initial SK-MCP implementation
+# - [Future versions will be logged here by Universal Builder]
