@@ -12,6 +12,8 @@ on:
         description: 'Value threshold for this task'
         required: false
         default: '50'
+  schedule:
+    - cron: '* * * * *'  # Run every minute, 24/7
 
 jobs:
   universal-builder:
@@ -24,7 +26,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '9.0.x'
+        dotnet-version: '8.0.x'
         
     - name: Install dependencies
       run: |
@@ -36,22 +38,42 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+        AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
         VALUE_THRESHOLD: ${{ github.event.inputs.value_threshold || secrets.DEFAULT_VALUE_THRESHOLD || '50' }}
       run: |
         echo "GITHUB_TOKEN=$GITHUB_TOKEN" >> $GITHUB_ENV
         echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> $GITHUB_ENV
+        echo "AZURE_OPENAI_API_KEY=$AZURE_OPENAI_API_KEY" >> $GITHUB_ENV
+        echo "AZURE_OPENAI_ENDPOINT=$AZURE_OPENAI_ENDPOINT" >> $GITHUB_ENV
         echo "VALUE_THRESHOLD=$VALUE_THRESHOLD" >> $GITHUB_ENV
         
-    - name: Run Universal Builder
+    - name: Determine intent
+      id: determine_intent
       run: |
         if [ "${{ github.event_name }}" == "issues" ]; then
           INTENT=$(echo "${{ github.event.issue.title }}" | tr -d '\n')
           VALUE_THRESHOLD="${{ secrets.DEFAULT_VALUE_THRESHOLD || '50' }}"
-        else
+          echo "INTENT=$INTENT" >> $GITHUB_ENV
+          echo "VALUE_THRESHOLD=$VALUE_THRESHOLD" >> $GITHUB_ENV
+        elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
           INTENT="${{ github.event.inputs.intent }}"
           VALUE_THRESHOLD="${{ github.event.inputs.value_threshold || secrets.DEFAULT_VALUE_THRESHOLD || '50' }}"
+          echo "INTENT=$INTENT" >> $GITHUB_ENV
+          echo "VALUE_THRESHOLD=$VALUE_THRESHOLD" >> $GITHUB_ENV
+        elif [ "${{ github.event_name }}" == "schedule" ]; then
+          # For scheduled runs, check if there's any pending work or if system should self-evolve
+          # This allows the system to decide what to do on its own
+          echo "Scheduled run - Universal Builder will check for pending work or self-evolve"
+          # Default to self-evolution if no specific task is found
+          INTENT="Self-evolve and improve Universal Builder capabilities"
+          VALUE_THRESHOLD="${{ secrets.DEFAULT_VALUE_THRESHOLD || '50' }}"
+          echo "INTENT=$INTENT" >> $GITHUB_ENV
+          echo "VALUE_THRESHOLD=$VALUE_THRESHOLD" >> $GITHUB_ENV
         fi
         
+    - name: Run Universal Builder
+      run: |
         dotnet run --project . -- "$INTENT" "$VALUE_THRESHOLD"
         
     - name: Create PR for self-evolution (if changes detected)
